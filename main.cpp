@@ -28,6 +28,13 @@
 
 
 
+#include "sdlmanager.hpp"
+#include "sdlresourcemanager.hpp"
+#include "sdlfonttexturemanager.hpp"
+
+
+
+
 int SDL_SetRenderDrawColor(
     SDL_Renderer* renderer,
     SDL_Color &color)
@@ -37,246 +44,26 @@ int SDL_SetRenderDrawColor(
 }
 
 
-// singleton
-class SDLManager
+int index_of_printable_char(const char c)
 {
-
-
-
-
-    public:
-
-
-    static SDLManager& getInstance()
+    if(c >= ' ' && c <= '~')
     {
-        static SDLManager sdl_manager_instance;
-        return sdl_manager_instance;
+        return c - ' ';
     }
-
-
-    SDLManager()
-        : m_init_success{false}
-        , m_window{nullptr}
-        , m_font_size{12}
-        , m_window_size_x{DEFAULT_WINDOW_SIZE_X}
-        , m_window_size_y{DEFAULT_WINDOW_SIZE_Y}
+    else
     {
-
-        // standard SDL init sequence
-        if(libs_init() == 0)
-        {
-            if(window_init() == 0)
-            {
-                if(renderer_init() == 0)
-                {
-                    if(font_init() == 0)
-                    {
-                        // nothing here
-                    }
-                }
-            }
-        }
-
+        return -1;
     }
-
-
-    ~SDLManager()
-    {
-        // TODO: what if SDL did not init correctly?
-        font_destroy();
-        renderer_destroy();
-        window_destroy();
-        libs_destroy();
-    }
-
-
-    SDLManager(SDLManager const&) = delete;
-    void operator=(SDLManager const&) = delete;
-
-
-
-    private:
-
-    int libs_init()
-    {   
-        if(SDL_Init(SDL_INIT_VIDEO) < 0)
-        {
-            std::cerr << SDL_GetError() << std::endl;
-
-            SDL_Quit(); // not sure if required
-
-            return 1;
-        }
-        else
-        {
-            if(TTF_Init() < 0)
-            {
-                std::cerr << TTF_GetError() << std::endl;
-
-                TTF_Quit();
-                SDL_Quit();
-
-                return 2;
-            }
-            else
-            {
-                m_init_success = true;
-                return 0;
-            }
-        }
-    }
-
-    void libs_destroy()
-    {
-        m_init_success = false;
-
-        TTF_Quit();
-        SDL_Quit();
-    }
-
-    int window_init()
-    {
-        if(m_init_success)
-        {
-            m_window = SDL_CreateWindow("SDL Text Graphics Library",
-                SDL_WINDOWPOS_UNDEFINED,
-                SDL_WINDOWPOS_UNDEFINED,
-                m_window_size_x, m_window_size_y,
-                SDL_WINDOW_SHOWN);
-            std::cout << "Window Size: " << m_window_size_x << " "
-                      << m_window_size_y << std::endl;
-
-            if(m_window == nullptr)
-            {
-                std::cerr << SDL_GetError() << std::endl;
-
-                libs_destroy();
-
-                return 0;
-            }
-            else
-            {
-                m_window_init_success = true;
-                return 0;
-            }
-        }
-        else
-        {
-            return 1;
-        }
-    }
-
-    void window_destroy()
-    {
-        if(m_window_init_success)
-        {
-            m_window_init_success = false;
-
-            SDL_DestroyWindow(m_window);
-            m_window = nullptr;
-        }
-    }
-
-    int renderer_init()
-    {
-        if( m_init_success &&
-            m_window_init_success)
-        {
-            m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
-            if(m_renderer == nullptr)
-            {
-                std::cerr << SDL_GetError() << std::endl;
-
-                window_destroy();
-                libs_destroy();
-
-                return 2;
-            }
-            else
-            {
-                m_renderer_init_success = true;
-
-                return 0;
-            }
-        }
-        else
-        {
-            return 1;
-        }
-    }
-
-    void renderer_destroy()
-    {
-        if(m_renderer_init_success)
-        {
-            m_renderer_init_success = false;
-
-            SDL_DestroyRenderer(m_renderer);
-            m_renderer = nullptr;
-        }
-    }
-
-    int font_init()
-    {
-        if( m_init_success &&
-            m_window_init_success &&
-            m_renderer_init_success)
-        {
-            return 0;
-        }
-        else
-        {
-            return 1;
-        }
-    }
-
-    void font_destroy()
-    {
-        if(m_font_init_success)
-        {
-            m_font_init_success = false;
-        }
-    }
-
-
-    private:
-
-    const unsigned int DEFAULT_WINDOW_SIZE_X = 800;
-    const unsigned int DEFAULT_WINDOW_SIZE_Y = 600;
-
-    // signals that libraries initialized correctly
-    // and that window was opened successfully
-    // libs: SDL, TTF
-    // does not include loading of fonts
-    bool m_init_success;
-    bool m_window_init_success;
-    bool m_renderer_init_success;
-    bool m_font_init_success;
-
-    SDL_Window *m_window;
-    unsigned int m_window_size_x;
-    unsigned int m_window_size_y;
-
-
-    public:
-    SDL_Renderer *m_renderer;
-
-    private:
-    // TODO: am I using this?
-    int m_font_size;
-
-};
+}
 
 
 
 
 
-class SDLResourceManager
-{
 
 
 
-};
+
 
 
 void fontConfigGetFontFilename(
@@ -342,10 +129,15 @@ int main(int argc, char* argv[])
     std::cout << "Matched font filename: " << font_filename << std::endl;
     
 
+    SDLFontTextureManager font_manager_liberation_mono(font_filename);
+    //std::shared_ptr<TTF_Font> font_liberation_mono = font_manager_liberation_mono.get();
+    //TTF_Font *font = font_liberation_mono.get();
 
-    TTF_Font *font = nullptr;
-    const int font_size = 12;
-    font = TTF_OpenFont(font_filename.c_str(), font_size);
+        // TODO: this class should not return the TTF_Font directly
+
+    //TTF_Font *font = nullptr;
+    //const int font_size = 16; // 12
+    //font = TTF_OpenFont(font_filename.c_str(), font_size);
 
     if(font == nullptr)
     {
@@ -356,60 +148,21 @@ int main(int argc, char* argv[])
     else
     {
 
-         	
+        // API sketch
+        //SDL_TextGridWindow textgridwindow = sdl_manager.CreateTextGridWindow();
+        //textgridwindow.SetFont(const SDLFontTextureManager &font_manager_liberation_mono)
 
-        SDL_Color COLOR_BLACK = SDL_Color(0, 0, 0);
-        SDL_Color COLOR_TEXT_DEFAULT = COLOR_BLACK;
+        SDL_Window *window = sdl_manager.CreateWindow();
 
-        int text_line_skip = TTF_FontLineSkip(font);
+        TextGrid textgrid(font_liberation_mono);
+        textgrid.SetFont(font_liberation_mono);
+        textgrid.Draw(window);
 
-        std::string text_chars_string;
-        std::map<char, std::string> map_text_chars_advance;
-        std::map<char, SDL_Rect> map_text_chars_rect;
-        for(char c = ' '; c <= '~'; ++ c)
-        {
-            text_chars_string.push_back(c);
 
-            // get the glyph metric for the letter c in a loaded font
-            int advance = 0;
-            int xmin = 0;
-            int xmax = 0;
-            int ymin = 0;
-            int ymax = 0;
-            if(TTF_GlyphMetrics(font, c, &xmin, &xmax,
-                &ymin, &ymax, &advance) == -1)
-            {
-                printf("%s\n", TTF_GetError());
-            }
-            else
-            {
-                map_text_chars_advance[c] = advance;
-                SDL_Rect r(xmin, ymin, xmax - xmin, ymax - ymin);
-                std::cout << "c=" << c
-                          << " " << xmin << " " << xmax
-                          << " " << ymin << " " << ymax
-                          << std::endl;
-            }
-        }
+        //SDL_Color COLOR_BLACK = SDL_Color(0, 0, 0);
+        //SDL_Color COLOR_TEXT_DEFAULT = COLOR_BLACK;
 
-        SDL_Surface *text_surface = 
-            // etc choose other later
-            //TTF_RenderText_Solid(
-            //TTF_RenderText_Shaded(
-            TTF_RenderText_Blended(
-                (TTF_Font*)font,
-                text_chars_string.c_str(),
-                COLOR_TEXT_DEFAULT);
-            
-
-        // at this point can now render any character from the surface
-
-        // convert the surface into a renderable texture
-
-        SDL_Renderer *renderer = sdl_manager.m_renderer;
-
-        SDL_Texture* text_texture = SDL_CreateTextureFromSurface(
-            renderer, text_surface);
+        // some stuff here
 
         if(text_texture == nullptr)
         {
@@ -447,14 +200,77 @@ int main(int argc, char* argv[])
                 else
                 {
                     // query was ok
+                    // draw whole character texture block
+                    int rdst_y = 0;
 
                     SDL_Rect rsrc;
                     rsrc.x = 0;
                     rsrc.y = 0;
                     rsrc.w = text_texture_w;
                     rsrc.h = text_texture_h;
-                    SDL_Rect rdst(0, 0, text_texture_w, text_texture_h);
+                    SDL_Rect rdst(0, rdst_y, text_texture_w, text_texture_h);
+                    SDL_Color COLOR_GREEN(0, 255, 0);
+                    SDL_SetRenderDrawColor(renderer, COLOR_GREEN);
+                    SDL_RenderFillRect(renderer, &rdst);
                     SDL_RenderCopy(renderer, text_texture, &rsrc, &rdst);
+
+                    // draw arbitary strings
+                    //rdst_y += text_line_skip;
+                    //rdst.y = rdst_y;
+                    rdst.x = 0;
+                    rdst.y += text_line_skip;
+
+                    std::string mytext("hello world 0123456789'''");
+                    int ticktock = 0;
+                    for(char c: mytext)
+                    {
+                        int offset_x = 0;
+                        int index = index_of_printable_char(c);
+                        if(index >= 0)
+                        {
+                            for(int count = 0;
+                                count < index;
+                                ++ count)
+                            {
+                                //rsrc_x += map_text_chars_rect.at(c).w;
+                                offset_x += map_text_chars_advance.at(c);
+                            }
+                            rsrc.x = map_text_chars_rect.at(c).x + offset_x;
+                            //rsrc.y = map_text_chars_rect.at(c).y;
+                        const int maxy = map_text_chars_rect.at(c).h + map_text_chars_rect.at(c).y;
+                            rsrc.y = text_ascent - maxy;
+                            //rsrc.y = text_texture_h - map_text_chars_rect.at(c).y;
+                            rdst.w = rsrc.w = map_text_chars_rect.at(c).w;
+                            rdst.h = rsrc.h = map_text_chars_rect.at(c).h;
+
+                            //rdst.y += rsrc.y;
+                            //const int maxy = map_text_chars_rect.at(c).h + map_text_chars_rect.at(c).y;
+                            rdst.y += text_ascent - maxy;
+                            rdst.x += map_text_chars_rect.at(c).x;
+                if(ticktock == 0)
+                {
+                    //SDL_Color COLOR_GREEN(0, 255, 0);
+                    SDL_SetRenderDrawColor(renderer, COLOR_GREEN);
+                    SDL_RenderFillRect(renderer, &rdst);
+                }
+                ticktock += 1;
+                ticktock %= 2;
+                            SDL_RenderCopy(renderer, text_texture, &rsrc, &rdst);
+                            rdst.x -= map_text_chars_rect.at(c).x;
+                            rdst.y -= text_ascent - maxy;
+                            int advance = map_text_chars_advance.at(c);
+                            
+                            //rdst.y -= rsrc.y;
+                            
+                            rdst.x += advance;
+                            rdst.y += 0;
+                        }
+                        else
+                        {
+                            std::cout << "Error in index_of_printable_char" << std::endl;
+                        }
+
+                    }
                 }
 
 
