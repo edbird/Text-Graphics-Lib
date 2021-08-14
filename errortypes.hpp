@@ -2,6 +2,10 @@
 #define ERRORTYPES_HPP
 
 
+#include <exception>
+#include <string>
+
+
 
 class ErrorBase
 {
@@ -38,6 +42,12 @@ class SDLLibError : public ErrorBase
 
     public:
 
+    SDLLibError(const std::string &what)
+        : ErrorBase(what)
+    {
+
+    }
+
     virtual
     ~SDLLibError()
     {
@@ -52,8 +62,14 @@ class TTFLibError : public ErrorBase
 
     public:
 
+    TTFLibError(const std::string &what)
+        : ErrorBase(what)
+    {
+
+    }
+
     virtual
-    ~SDLLibError()
+    ~TTFLibError()
     {
 
     }
