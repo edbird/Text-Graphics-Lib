@@ -1,6 +1,13 @@
 #include "fc_helper.hpp"
 
 
+
+#include <fontconfig/fontconfig.h>
+
+
+#include <cstdio>
+
+
 void fontConfigGetFontFilename(
     char return_buffer[],
     const unsigned int BUFFER_SIZE,
@@ -25,7 +32,7 @@ void fontConfigGetFontFilename(
 
 	if(font)
 	{
-		FcChar8* file = NULL; 
+		FcChar8* file = nullptr; 
 
 		if(FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
 		{
