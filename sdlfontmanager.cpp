@@ -1,9 +1,13 @@
 #include "sdlfontmanager.hpp"
 
 
+
+
+
+
 void SDLFontManager::font_manager_init(
     const SDLManager &sdlmanager,
-    std::weak_ptr<SDL_Renderer> renderer,
+    std::shared_ptr<SDL_Renderer> sdlrenderer,
     const std::string &font_path,
     const int font_size)
 {
@@ -36,11 +40,10 @@ void SDLFontManager::font_manager_init(
 
         if(m_font.get() != nullptr)
         {
-            m_font_init_success = true;
 
             // NOTE: presumably these cannot fail
-            const int font_line_skip = TTF_FontLineSkip(m_font);
-            const int font_ascent = TTF_FontAscent(m_font);
+            const int font_line_skip = TTF_FontLineSkip(m_font.get());
+            const int font_ascent = TTF_FontAscent(m_font.get());
             //m_font_properties_success = true; // TODO
 
             //if(m_font_properties_success)
@@ -53,20 +56,36 @@ void SDLFontManager::font_manager_init(
                 // create the FontTextureManager
                 m_sdlfonttexturemanager.reset(
                     new SDLFontTextureManager(
+                        sdlrenderer,
+                        //*this,
+                        m_font,
                         font_size,
-                        font_line_skip
+                        font_line_skip,
                         font_ascent,
                         font_chars_string));
 
                 // NOTE: managed internally
                 //m_sdlfonttexturemanager->set_glyph_metrics(font_chars_string);
                 //m_sdlfonttexturemanager->render_ascii_chars(font_chars_string);
+
+                if(m_sdlfonttexturemanager.get() != nullptr)
+                {
+                    m_font_manager_init_success = true;
+                    // TODO: maybe can remove this variable, does nothing?
+
+                    throw SDLLibError("error TODO (2)");
+                }
+                else
+                {
+                    // TODO: what type of error here?
+                    throw SDLLibError("error TODO");
+                }
             }
         }
         else
         {
             std::cout << "Error: Could not load font from file: "
-                    << font_filename << std::endl;
+                    << font_path << std::endl;
             std::cout << TTF_GetError() << std::endl;
 
             throw TTFLibError("Error in font_init(), failed to load font from file");

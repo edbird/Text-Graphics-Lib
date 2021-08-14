@@ -5,6 +5,7 @@
 #include "errortypes.hpp"
 
 
+#include "sdlmanager.hpp"
 #include "sdlfonttexturemanager.hpp"
 
 
@@ -21,7 +22,7 @@ class SDLFontManager
 
     SDLFontManager(
         const SDLManager &sdlmanager,
-        std::weak_ptr<SDL_Renderer> renderer,
+        std::shared_ptr<SDL_Renderer> sdlrenderer,
         const std::string &font_path,
         const int font_size)
         : m_font_manager_init_success(false)
@@ -30,9 +31,11 @@ class SDLFontManager
         ////, m_font_render_success(false)
         ////, m_chars_render_texture_success(false)
         ////, m_glyphmetrics_success(false)
-        , m_font_size(font_size)
+        //, m_font_size(font_size)
     {
-        font_manager_init(font_path, font_size)
+        font_manager_init(
+            sdlmanager, sdlrenderer,
+            font_path, font_size);
     }
 
 
@@ -47,14 +50,15 @@ class SDLFontManager
     std::weak_ptr<SDLFontTextureManager>
     GetSDLFontTextureManager()
     {
-        return std::weak_ptr(m_sdlfonttexturemanager); // TODO: cast to weak?
+        return std::weak_ptr<SDLFontTextureManager>(
+            m_sdlfonttexturemanager); // TODO: cast to weak?
     }
 
 
 
-    void SDLFontManager::font_manager_init(
+    void font_manager_init(
         const SDLManager &sdlmanager,
-        std::weak_ptr<SDL_Renderer> renderer,
+        std::shared_ptr<SDL_Renderer> sdlrenderer,
         const std::string &font_path,
         const int font_size);
 
@@ -73,6 +77,8 @@ class SDLFontManager
             m_sdlfonttexturemanager.reset(); // not really needed
         }
     }
+
+    bool FontManagerInitSuccess() const;
 
 
     // private functions
