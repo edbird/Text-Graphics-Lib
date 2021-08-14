@@ -3,9 +3,10 @@
 
 
 // default colors
-const SDL_Color COLOR_BLACK = SDL_Color(0, 0, 0);
-const SDL_Color COLOR_GREEN = SDL_Color(0, 255, 0);
-const SDL_Color COLOR_GREY_LIGHT = SDL_Color(220, 220, 220);
+const SDL_Color COLOR_WHITE { 255, 255, 255, 255 };
+const SDL_Color COLOR_BLACK { 0, 0, 0, 255 };
+const SDL_Color COLOR_GREEN { 0, 255, 0, 255 };
+const SDL_Color COLOR_GREY_LIGHT { 220, 220, 220, 255 };
 
 
 // GUI element colors
