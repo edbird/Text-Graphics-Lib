@@ -30,6 +30,12 @@
 
 #include <memory>
 #include <iostream>
+#include <map>
+
+
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 
 
@@ -41,6 +47,10 @@
 // the required data for an external function to do
 // the rendering
 
+
+//class SDLFontManager;
+
+
 class SDLFontTextureManager
 {
 
@@ -48,11 +58,16 @@ class SDLFontTextureManager
 
 
     SDLFontTextureManager(
+            const std::shared_ptr<SDL_Renderer> sdlrenderer,
+            //const SDLFontManager &sdlfontmanager,
+            const std::shared_ptr<TTF_Font> sdlfont,
             const int font_size,
             const int font_line_skip,
             const int font_ascent,
             const std::string &font_chars_string)
         : m_font_texture_manager_init_success(false)
+        , m_glyphmetrics_success(false)
+        , m_font_render_success(false)
         , m_font_size(font_size)
         , m_font_line_skip(font_line_skip)
         , m_font_ascent(font_ascent)
@@ -62,8 +77,16 @@ class SDLFontTextureManager
         // file and is not actually used by the rendering
         // function
     {
-        set_glyph_metrics(font_chars_string);
-        render_ascii_chars(font_chars_string);
+        set_glyph_metrics(
+            //sdlfontmanager,
+            sdlfont,
+            font_chars_string);
+
+        render_ascii_chars(
+            //sdlfontmanager,
+            sdlfont,
+            sdlrenderer,
+            font_chars_string);
     }
 
     ~SDLFontTextureManager()
@@ -95,9 +118,16 @@ class SDLFontTextureManager
     private:
 
 
-    void set_glyph_metrics(const std::string &font_chars_string);
+    void set_glyph_metrics(
+        //const SDLFontManager &sdlfontmanager,
+        const std::shared_ptr<TTF_Font> &sdlfont,
+        const std::string &font_chars_string);
     
-    void render_ascii_chars(const std::string &font_chars_string);
+    void render_ascii_chars(
+        //const SDLFontManager &sdlfontmanager,
+        const std::shared_ptr<TTF_Font> &sdlfont,
+        const std::shared_ptr<SDL_Renderer> sdlrenderer,
+        const std::string &font_chars_string);
 
 
 
@@ -106,6 +136,11 @@ class SDLFontTextureManager
 
 
     bool m_font_texture_manager_init_success;
+
+    bool m_glyphmetrics_success;
+        // NOTE: needed to set m_font_texture_manager_init_success
+    bool m_font_render_success;
+        // NOTE: needed to set m_font_texture_manager_init_success
 
 
     // these variables remain members of this class, as they may need
