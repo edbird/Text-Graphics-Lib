@@ -4,7 +4,7 @@
 
 
 
-#include "errortypes.hpp"
+#include "exceptiontypes.hpp"
 
 
 #include <memory>
@@ -47,11 +47,11 @@ class SDLManager
         {
             libs_init();
         }
-        catch(const SDLLibError &error)
+        catch(const SDLLibException &error)
         {
             throw;
         }
-        catch(const TTFLibError &error)
+        catch(const TTFLibException &error)
         {
             throw;
         }
@@ -95,7 +95,7 @@ class SDLManager
 
             SDL_Quit(); // not sure if required
 
-            throw SDLLibError("SDL_Init error");
+            throw SDLLibException("SDL_Init error");
         }
         else
         {
@@ -108,7 +108,7 @@ class SDLManager
                 TTF_Quit();
                 SDL_Quit();
 
-                throw TTFLibError("TTF_Init error");
+                throw TTFLibException("TTF_Init error");
             }
             else
             {

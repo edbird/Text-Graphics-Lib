@@ -24,7 +24,7 @@
 // handled
 
 
-#include "errortypes.hpp"
+#include "exceptiontypes.hpp"
 
 
 
@@ -48,11 +48,36 @@
 // the rendering
 
 
-//class SDLFontManager;
+class SDLFontManager;
 
 
 class SDLFontTextureManager
 {
+
+
+    // required for GetFontAscent()
+    // and GetFontLineSkip() functions
+    // in SDLFontManager class
+    friend class SDLFontManager;
+
+
+    friend void draw(
+        const SDLFontManager &sdlfontmanager,
+        std::shared_ptr<SDL_Renderer> sdlrenderer,
+        //SDL_Renderer &sdlrenderer,
+        const char c,
+        int &x, const int y);
+
+
+    friend void draw_with_background(
+        const SDLFontManager &sdlfontmanager,
+        std::shared_ptr<SDL_Renderer> sdlrenderer,
+        //SDL_Renderer &sdlrenderer,
+        const char c,
+        int &x, const int y,
+        const SDL_Color &background_color);
+
+
 
     public:
 
@@ -80,6 +105,7 @@ class SDLFontTextureManager
         set_glyph_metrics(
             //sdlfontmanager,
             sdlfont,
+            font_ascent,
             font_chars_string);
 
         render_ascii_chars(
@@ -92,7 +118,8 @@ class SDLFontTextureManager
     ~SDLFontTextureManager()
     {
         map_rendered_chars_advance.clear();
-        map_rendered_chars_rect.clear();
+        map_rendered_chars_srect.clear();
+        map_rendered_chars_drect.clear();
 
         // TODO: remove
         if(m_font_texture_manager_init_success)
@@ -121,6 +148,7 @@ class SDLFontTextureManager
     void set_glyph_metrics(
         //const SDLFontManager &sdlfontmanager,
         const std::shared_ptr<TTF_Font> &sdlfont,
+        const int font_ascent,
         const std::string &font_chars_string);
     
     void render_ascii_chars(
@@ -153,7 +181,8 @@ class SDLFontTextureManager
 
     //std::string m_chars;
     std::map<char, int> map_rendered_chars_advance;
-    std::map<char, SDL_Rect> map_rendered_chars_rect;
+    std::map<char, SDL_Rect> map_rendered_chars_srect;
+    std::map<char, SDL_Rect> map_rendered_chars_drect;
         // rect properties:
         // x, y position of coordinates of char on texture surface
         // w, h size of char on texture surface
@@ -163,6 +192,8 @@ class SDLFontTextureManager
 
 
 };
+
+
 
 
 #endif // SDLFONTTEXTUREMANAGER_HPP

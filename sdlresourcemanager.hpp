@@ -12,7 +12,7 @@
 
 
 
-#include "errortypes.hpp"
+#include "exceptiontypes.hpp"
 
 
 
@@ -54,11 +54,11 @@ class SDLResourceManager
                 //window_destroy();
                 DestroyWindow();
             }
-            catch(const SDLLibError &error)
+            catch(const SDLLibException &error)
             {
                 // suppress warnings
             }
-            catch(const TTFLibError &error)
+            catch(const TTFLibException &error)
             {
                 // do nothing
             }
@@ -88,7 +88,7 @@ class SDLResourceManager
     {
         if(m_window.get() == nullptr)
         {
-            throw SDLLibError("Error, no window to destroy");
+            throw SDLLibException("Error, no window to destroy");
         }
         else
         {
@@ -130,7 +130,7 @@ class SDLResourceManager
 
                 if(m_window.get() == nullptr)
                 {
-                    throw SDLLibError("Error: failed to create window");
+                    throw SDLLibException("Error: failed to create window");
                 }
                 else
                 {
@@ -143,7 +143,7 @@ class SDLResourceManager
 
                     if(m_renderer.get() == nullptr)
                     {
-                        throw SDLLibError("Error: failed to create renderer associated to window");
+                        throw SDLLibException("Error: failed to create renderer associated to window");
                     }
                     else
                     {
@@ -155,12 +155,12 @@ class SDLResourceManager
             }
             else
             {
-                throw SDLLibError("window already created");
+                throw SDLLibException("window already created");
             }
         }
         else
         {
-            throw SDLLibError("Error in window_init(), SDL library is not initialized");
+            throw SDLLibException("Error in window_init(), SDL library is not initialized");
         }
 
         return m_window;
@@ -195,7 +195,7 @@ class SDLResourceManager
                     std::cerr << SDL_GetError() << std::endl;
 
                     //libs_destroy();
-                    throw SDLLibError("Error in window_init(), could not create SDL window object");
+                    throw SDLLibException("Error in window_init(), could not create SDL window object");
                 }
                 else
                 {
@@ -204,12 +204,12 @@ class SDLResourceManager
             }
             else
             {
-                throw SDLLibError("Error in window_init(), could not create SDL window object, window already initialized");
+                throw SDLLibException("Error in window_init(), could not create SDL window object, window already initialized");
             }
         }
         else
         {
-            throw SDLLibError("Error in window_init(), SDL library is not initialized");
+            throw SDLLibException("Error in window_init(), SDL library is not initialized");
         }
     }
 
@@ -242,7 +242,7 @@ class SDLResourceManager
                     window_destroy();
                     libs_destroy();
 
-                    throw SDLLibError("Error in renderer_init(), could not create SDL renderer object");
+                    throw SDLLibException("Error in renderer_init(), could not create SDL renderer object");
                 }
                 else
                 {
@@ -251,12 +251,12 @@ class SDLResourceManager
             }
             else
             {
-                throw SDLLibError("Error in renderer_init(), previous error caused SDL init or window init to fail");
+                throw SDLLibException("Error in renderer_init(), previous error caused SDL init or window init to fail");
             }
         }
         else
         {
-            throw SDLLibError("Error in window_init(), SDL library is not initialized");
+            throw SDLLibException("Error in window_init(), SDL library is not initialized");
         }
     }
 

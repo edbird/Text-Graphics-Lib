@@ -12,7 +12,7 @@ find_package(SDL2 REQUIRED)
 find_package(SDL2TTF REQUIRED)
 include_directories(textgraphicslib ${SDL2_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIR})
 
-set(SOURCE_FILES main.cpp fc_helper.cpp sdlfontmanager.cpp sdlfontmanager_fontmanagerinitsuccess.cpp sdlfonttexturemanager.cpp fc_helper.cpp)
+set(SOURCE_FILES main.cpp fc_helper.cpp sdlfontmanager.cpp sdlfontmanager_fontmanagerinitsuccess.cpp sdlfonttexturemanager.cpp fc_helper.cpp sdlhelper.cpp)
 
 add_executable(textgraphicslib ${SOURCE_FILES})
 

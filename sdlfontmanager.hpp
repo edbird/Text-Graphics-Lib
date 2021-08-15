@@ -2,7 +2,7 @@
 #define SDLFONTMANAGER_HPP
 
 
-#include "errortypes.hpp"
+#include "exceptiontypes.hpp"
 
 
 #include "sdlmanager.hpp"
@@ -13,12 +13,44 @@
 #include <iostream>
 
 
+//
+// TODO: there doesn't seem to be much purpose in separating the
+// Font Manager and the Font Texture Manager
+// however this feature was in place for when multiple textures
+// for different rendered font sizes (or possibly colors/styles)
+// might be loaded from the same font manager class
+//
+
+
 
 class SDLFontManager
 {
 
 
+    friend void draw(
+        const SDLFontManager &sdlfontmanager,
+        std::shared_ptr<SDL_Renderer> sdlrenderer,
+        //SDL_Renderer &sdlrenderer,
+        const char c,
+        int &x, const int y);
+
+
+    friend void draw_with_background(
+        const SDLFontManager &sdlfontmanager,
+        std::shared_ptr<SDL_Renderer> sdlrenderer,
+        //SDL_Renderer &sdlrenderer,
+        const char c,
+        int &x, const int y,
+        const SDL_Color &background_color);
+
+
+
     public:
+
+    SDLFontManager()
+        : m_font_manager_init_success(false)
+    {
+    }
 
     SDLFontManager(
         const SDLManager &sdlmanager,
@@ -38,6 +70,23 @@ class SDLFontManager
             font_path, font_size);
     }
 
+    // TODO come back and check this later but this should work
+    SDLFontManager(SDLFontManager &&other) noexcept
+        : m_sdlfonttexturemanager(std::move(other.m_sdlfonttexturemanager))
+        , m_font_manager_init_success(std::move(other.m_font_manager_init_success))
+    {
+
+    }
+
+    SDLFontManager& operator=(SDLFontManager&& other)
+    {
+        m_sdlfonttexturemanager = other.m_sdlfonttexturemanager;
+        m_font_manager_init_success = other.m_font_manager_init_success;
+
+        other.m_font_manager_init_success = false;
+
+        return *this;
+    }
 
     ~SDLFontManager()
     {
@@ -46,14 +95,24 @@ class SDLFontManager
         font_manager_destroy();
     }
 
+    int GetFontAscent() const
+    {
+        return m_sdlfonttexturemanager->m_font_ascent;
+    }
 
+    int GetFontLineSkip() const
+    {
+        return m_sdlfonttexturemanager->m_font_line_skip;
+    }
+
+/*
     std::weak_ptr<SDLFontTextureManager>
     GetSDLFontTextureManager()
     {
         return std::weak_ptr<SDLFontTextureManager>(
             m_sdlfonttexturemanager); // TODO: cast to weak?
     }
-
+*/
 
 
     void font_manager_init(

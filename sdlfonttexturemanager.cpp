@@ -8,9 +8,12 @@
 void SDLFontTextureManager::set_glyph_metrics(
     //const SDLFontManager &sdlfontmanager,
     const std::shared_ptr<TTF_Font> &sdlfont,
+    const int font_ascent,
     const std::string &font_chars_string)
 {
     
+    std::cout << "font_ascent=" << font_ascent << std::endl;
+
     m_glyphmetrics_success = false;
 
     // get the glyph metrics for each character to be rendered
@@ -25,11 +28,15 @@ void SDLFontTextureManager::set_glyph_metrics(
         // to be able to call this function body
     {
         map_rendered_chars_advance.clear();
-        map_rendered_chars_rect.clear();
+        map_rendered_chars_srect.clear();
+        map_rendered_chars_drect.clear();
+
+        int rx_offset = 0;
 
         for(char c: font_chars_string)
         {
             int advance = 0;
+
             int xmin = 0;
             int xmax = 0;
             int ymin = 0;
@@ -45,23 +52,45 @@ void SDLFontTextureManager::set_glyph_metrics(
                     std::string("Error in set_glyph_metrics(), failed to read glyph metrics for char ") +
                     std::string{c}
                 );
-                throw TTFLibError(str_error);
+                throw TTFLibException(str_error);
             }
             else
             {
                 map_rendered_chars_advance[c] = advance;
-                SDL_Rect r{xmin, ymin, xmax - xmin, ymax - ymin};
+
+                ////int rx = rx_offset + xmin;
+                int rx = xmin;
+                //int ry = ymin + font_ascent;
+                ////int ry = font_ascent - ymax;
+                int ry = font_ascent - ymax;
+                int rwidth = xmax - xmin;
+                int rheight = ymax - ymin;
+
+            /*
+                chars_rect.at(c).h = maxy - miny
+                chars_rect.at(c).y = miny
+                dst.y = text_ascent - chars_rect.at(c).h - chars_rect.at(c).y;
+                dst.y = text_ascent - maxy + miny - miny;
+                dst.y = text_ascent - maxy;
+            */
+
+
+                SDL_Rect rs{rx + rx_offset, ry, rwidth, rheight};
+                SDL_Rect rd{rx, ry, rwidth, rheight};
                 std::cout << "c=" << c
                         << " " << xmin << " " << xmax
                         << " " << ymin << " " << ymax
                         << std::endl;
-                map_rendered_chars_rect[c] = r;
+                map_rendered_chars_srect[c] = rs;
+                map_rendered_chars_drect[c] = rd; // TODO: currently srcrect and dstrect are the same!!!
+
+                rx_offset += advance;
             }
         }
     }
     //else
     //{
-    //    throw TTFLibError("Error in set_glyph_metrics(), TTF font failed to initialize");
+    //    throw TTFLibException("Error in set_glyph_metrics(), TTF font failed to initialize");
     //}
 
     m_glyphmetrics_success = true;
@@ -108,7 +137,7 @@ void SDLFontTextureManager::render_ascii_chars(
         {
             //m_chars_render_success = false;
 
-            throw TTFLibError("Error in render_ascii_chars(), failed to render text surface");
+            throw TTFLibException("Error in render_ascii_chars(), failed to render text surface");
         }
 
         // at this point can now render any character from the surface
@@ -137,19 +166,19 @@ void SDLFontTextureManager::render_ascii_chars(
                 }
                 else
                 {
-                    throw SDLLibError("Error in render_ascii_chars(), SDL_CreateTextureFromSurface error");
+                    throw SDLLibException("Error in render_ascii_chars(), SDL_CreateTextureFromSurface error");
                 }
             }
             // this code is never reachable because the error
             // will have already been thrown
             else
             {
-                throw TTFLibError("Error in render_ascii_chars(), failed to render text surface");
+                throw TTFLibException("Error in render_ascii_chars(), failed to render text surface");
             }
         }
         else
         {
-            throw SDLLibError("Error in render_ascii_chars(), failed to get SDL renderer object");
+            throw SDLLibException("Error in render_ascii_chars(), failed to get SDL renderer object");
         }
     }
 

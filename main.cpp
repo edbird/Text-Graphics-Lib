@@ -35,13 +35,7 @@
 
 
 
-int SDL_SetRenderDrawColor(
-    SDL_Renderer* renderer,
-    SDL_Color &color)
-{
-    return SDL_SetRenderDrawColor(renderer,
-        color.r, color.g, color.b, 255);
-}
+#include "sdlhelper.hpp"
 
 
 #include "color.hpp"
@@ -107,13 +101,28 @@ int main(int argc, char* argv[])
         sdl_resource_manager.GetWindowRenderer();
 
 
-    // create font texture
-    SDLFontManager font_manager_liberation_mono(
-        sdl_manager,
-        std::shared_ptr<SDL_Renderer>(renderer),
-        font_filename,
-        12);
-    
+    std::cout << "loading font" << std::endl;
+
+    SDLFontManager font_manager_liberation_mono;
+    try
+    {
+        // create font texture
+        SDLFontManager font_manager_liberation_mono_local(
+            sdl_manager,
+            std::shared_ptr<SDL_Renderer>(renderer),
+            font_filename,
+            12);
+
+        font_manager_liberation_mono = std::move(font_manager_liberation_mono_local);
+    }
+    catch(const SDLLibException &e)
+    {
+        std::cout << e.what() << std::endl;
+    }
+    catch(const std::exception &e)
+    {
+        std::cout << e.what() << std::endl;
+    }
 
 
     {
@@ -140,7 +149,7 @@ int main(int argc, char* argv[])
             // continue to render stuff
             SDL_Color COLOR_BACKGROUND = COLOR_WHITE;
 
-
+            std::cout << "Main loop" << std::endl;
 
 
 
@@ -175,6 +184,96 @@ int main(int argc, char* argv[])
 
 
                 //textgrid.Draw(window);
+
+                int font_line_skip = font_manager_liberation_mono.GetFontLineSkip();
+                int font_ascent = font_manager_liberation_mono.GetFontAscent();
+
+                ///int rdst_y = 0;
+                ///SDL_Rect rdst(0, rdst_y, 0, 0);
+
+                int pos_x = 10;
+                int pos_y = 10;
+
+                // draw arbitary strings
+                //rdst_y += font_line_skip;
+                //rdst.y = rdst_y;
+                ///rdst.x = 0;
+                ///rdst.y += font_line_skip;
+
+                std::string mytext("hello world 0123456789'''");
+                int ticktock = 0;
+                int t_pos_x = pos_x;
+                for(char c: mytext)
+                {
+
+                    draw(
+                        font_manager_liberation_mono,
+                        std::shared_ptr<SDL_Renderer>(renderer),
+                        c, t_pos_x, pos_y);
+                }
+
+                t_pos_x = pos_x;
+                for(char c: mytext)
+                {
+                    draw(
+                        font_manager_liberation_mono,
+                        std::shared_ptr<SDL_Renderer>(renderer),
+                        c, pos_x, pos_y + 40);
+                }
+
+
+                    /*
+                    int offset_x = 0;
+                    int index = index_of_printable_char(c);
+                    if(index >= 0)
+                    {
+                        for(int count = 0;
+                            count < index;
+                            ++ count)
+                        {
+                            //rsrc_x += map_text_chars_rect.at(c).w;
+                            offset_x += map_text_chars_advance.at(c);
+                        }
+                        rsrc.x = map_text_chars_rect.at(c).x + offset_x;
+                        //rsrc.y = map_text_chars_rect.at(c).y;
+                    const int maxy = map_text_chars_rect.at(c).h + map_text_chars_rect.at(c).y; // TODO: remove?
+                        rsrc.y = text_ascent - maxy;
+                        //rsrc.y = text_texture_h - map_text_chars_rect.at(c).y;
+                        rdst.w = rsrc.w = map_text_chars_rect.at(c).w;
+                        rdst.h = rsrc.h = map_text_chars_rect.at(c).h;
+
+                        //rdst.y += rsrc.y;
+                        //const int maxy = map_text_chars_rect.at(c).h + map_text_chars_rect.at(c).y;
+                        rdst.y += text_ascent - maxy;
+                        rdst.x += map_text_chars_rect.at(c).x;
+
+                        // TODO: remove this block
+                        if(ticktock == 0)
+                        {
+                            //SDL_Color COLOR_GREEN(0, 255, 0);
+                            SDL_SetRenderDrawColor(renderer, COLOR_GREEN);
+                            SDL_RenderFillRect(renderer, &rdst);
+                        }
+                        ticktock += 1;
+                        ticktock %= 2;
+
+                        SDL_RenderCopy(renderer, text_texture, &rsrc, &rdst);
+                        rdst.x -= map_text_chars_rect.at(c).x;
+                        rdst.y -= text_ascent - maxy;
+                        int advance = map_text_chars_advance.at(c);
+                        
+                        //rdst.y -= rsrc.y;
+                        
+                        rdst.x += advance;
+                        rdst.y += 0;
+                    }
+                    else
+                    {
+                        std::cout << "Error in index_of_printable_char" << std::endl;
+                    }
+                    */
+
+                
 
 
                 SDL_RenderPresent(std::shared_ptr<SDL_Renderer>(renderer).get());
