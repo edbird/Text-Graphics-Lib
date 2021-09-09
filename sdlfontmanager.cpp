@@ -34,7 +34,7 @@ void SDLFontManager::font_manager_init(
         )
     {
         //TTF_Font *font = nullptr;
-        const int font_size = DEFAULT_FONT_SIZE; // 12
+        //const int font_size = DEFAULT_FONT_SIZE; // 12
         m_font.reset(TTF_OpenFont(font_path.c_str(), font_size),
             TTF_CloseFont);
 
@@ -108,9 +108,9 @@ void SDLFontManager::font_manager_init(
 
 #include "sdlhelper.hpp"
 
-void draw(
-    const SDLFontManager &sdlfontmanager,
+void write(
     std::shared_ptr<SDL_Renderer> sdlrenderer,
+    const SDLFontManager &sdlfontmanager,
     //SDL_Renderer &sdlrenderer,
     const char c,
     int &x, const int y)
@@ -165,9 +165,9 @@ void draw(
 
 // TODO: convert SDL Renderer to a smart pointer?
 
-void draw_with_background(
-    const SDLFontManager &sdlfontmanager,
+void write_with_background(
     std::shared_ptr<SDL_Renderer> sdlrenderer,
+    const SDLFontManager &sdlfontmanager,
     //SDL_Renderer &sdlrenderer,
     const char c,
     int &x, const int y,
@@ -194,5 +194,47 @@ void draw_with_background(
     const int advance =
         sdlfonttexturemanager->map_rendered_chars_advance.at(c);
     x += advance;
+
+}
+
+
+
+void write_string(
+    std::shared_ptr<SDL_Renderer> sdlrenderer,
+    const SDLFontManager &sdlfontmanager,
+    //SDL_Renderer &sdlrenderer,
+    const std::string &text,
+    int &x, const int y)
+{
+
+    std::shared_ptr<SDLFontTextureManager> sdlfonttexturemanager
+        = sdlfontmanager.m_sdlfonttexturemanager;
+
+    //int local_x = x;
+    for(auto c: text)
+    {
+        write(sdlrenderer, sdlfontmanager, c, x, y);
+        //write(sdlrenderer, sdlfontmanager, c, local_x, y);
+
+    /*
+        SDL_Rect rsrc = sdlfonttexturemanager->map_rendered_chars_srect.at(c);
+        SDL_Rect rdst = sdlfonttexturemanager->map_rendered_chars_drect.at(c);
+        //SDL_Rect rdst = {x, y, rsrc.w, rsrc.h};
+
+        rdst.x += local_x;
+        rdst.y += y;
+
+        SDL_SetRenderDrawColor(sdlrenderer.get(), background_color);
+        SDL_RenderFillRect(sdlrenderer.get(), &rdst);
+        SDL_RenderCopy(
+            sdlrenderer.get(),
+            sdlfonttexturemanager->m_chars_texture.get(),
+            &rsrc, &rdst);
+
+        const int advance =
+            sdlfonttexturemanager->map_rendered_chars_advance.at(c);
+        local_x += advance;
+    */
+    }
 
 }
