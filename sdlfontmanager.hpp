@@ -27,17 +27,25 @@ class SDLFontManager
 {
 
 
-    friend void draw(
-        const SDLFontManager &sdlfontmanager,
+    friend void write(
         std::shared_ptr<SDL_Renderer> sdlrenderer,
+        const SDLFontManager &sdlfontmanager,
         //SDL_Renderer &sdlrenderer,
         const char c,
         int &x, const int y);
 
-
-    friend void draw_with_background(
-        const SDLFontManager &sdlfontmanager,
+    
+    friend void write_string(
         std::shared_ptr<SDL_Renderer> sdlrenderer,
+        const SDLFontManager &sdlfontmanager,
+        //SDL_Renderer &sdlrenderer,
+        const std::string &text,
+        int &x, const int y);
+
+
+    friend void write_with_background(
+        std::shared_ptr<SDL_Renderer> sdlrenderer,
+        const SDLFontManager &sdlfontmanager,
         //SDL_Renderer &sdlrenderer,
         const char c,
         int &x, const int y,
