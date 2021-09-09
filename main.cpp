@@ -113,7 +113,8 @@ int main(int argc, char* argv[])
             font_filename,
             12);
 
-        font_manager_liberation_mono = std::move(font_manager_liberation_mono_local);
+        font_manager_liberation_mono =
+            std::move(font_manager_liberation_mono_local);
     }
     catch(const SDLLibException &e)
     {
@@ -122,6 +123,24 @@ int main(int argc, char* argv[])
     catch(const std::exception &e)
     {
         std::cout << e.what() << std::endl;
+    }
+
+    SDLFontManager font_manager_liberation_mono_large;
+    try
+    {
+        // load font from file using helper class
+        SDLFontManager font_manager_liberation_mono_large_local(
+            sdl_manager,
+            std::shared_ptr<SDL_Renderer>(renderer),
+            font_filename,
+            18);
+
+        font_manager_liberation_mono_large =
+            std::move(font_manager_liberation_mono_large_local);
+    }
+    catch(...)
+    {
+        throw;
     }
 
 
@@ -205,21 +224,28 @@ int main(int argc, char* argv[])
                 int t_pos_x = pos_x;
                 for(char c: mytext)
                 {
-
-                    draw(
-                        font_manager_liberation_mono,
+                    write(
                         std::shared_ptr<SDL_Renderer>(renderer),
+                        font_manager_liberation_mono,
                         c, t_pos_x, pos_y);
                 }
 
                 t_pos_x = pos_x;
                 for(char c: mytext)
                 {
-                    draw(
-                        font_manager_liberation_mono,
+                    write_with_background(
                         std::shared_ptr<SDL_Renderer>(renderer),
-                        c, pos_x, pos_y + 40);
+                        font_manager_liberation_mono,
+                        c, t_pos_x, pos_y + 40,
+                        COLOR_GREEN);
                 }
+
+                std::string mystring("this is a test string!");
+                t_pos_x = pos_x;
+                write_string(
+                    std::shared_ptr<SDL_Renderer>(renderer),
+                    font_manager_liberation_mono_large,
+                    mystring, t_pos_x, pos_y + 80);
 
 
                     /*
