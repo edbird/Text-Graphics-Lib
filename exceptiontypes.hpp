@@ -2,7 +2,7 @@
 #define EXCEPTIONTYPES_HPP
 
 
-#include <exception>
+//#include <exception>
 #include <string>
 
 

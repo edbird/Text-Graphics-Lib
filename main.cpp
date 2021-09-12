@@ -84,24 +84,35 @@ int main(int argc, char* argv[])
 
 
     // "/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf"
-    const int FONT_FILENAME_BUFFER_SIZE = 4096;
+    /*const int FONT_FILENAME_BUFFER_SIZE = 4096;
     char font_filename_buffer[FONT_FILENAME_BUFFER_SIZE];
     fontConfigGetFontFilename(font_filename_buffer,
         FONT_FILENAME_BUFFER_SIZE, "Liberation Mono");
 
-    std::string font_filename(font_filename_buffer); 
+    std::string font_filename(font_filename_buffer);*/
+    std::string font_filename;
+    try
+    {
+        font_filename = fontConfigGetFontFilename("Liberation Mono");
+    }
+    catch(std::exception &e)
+    {
+        std::cout << "e.what() = " << e.what() << std::endl;
+        throw;
+    }
     std::cout << "Matched font filename: " << font_filename << std::endl;
 
 
     // create window and renderer - required to create font texture
-    std::weak_ptr<SDL_Window> window =
-        sdl_resource_manager.CreateWindow(sdl_manager);
+    std::shared_ptr<SDL_Window> window(
+        sdl_resource_manager.CreateWindow(sdl_manager));
 
-    std::weak_ptr<SDL_Renderer> renderer =
-        sdl_resource_manager.GetWindowRenderer();
+    std::shared_ptr<SDL_Renderer> renderer(
+        sdl_resource_manager.GetWindowRenderer());
 
 
     std::cout << "loading font" << std::endl;
+
 
     SDLFontManager font_manager_liberation_mono;
     try
@@ -109,7 +120,8 @@ int main(int argc, char* argv[])
         // create font texture
         SDLFontManager font_manager_liberation_mono_local(
             sdl_manager,
-            std::shared_ptr<SDL_Renderer>(renderer),
+            //std::shared_ptr<SDL_Renderer>(renderer),
+            renderer,
             font_filename,
             12);
 
@@ -125,13 +137,15 @@ int main(int argc, char* argv[])
         std::cout << e.what() << std::endl;
     }
 
+
     SDLFontManager font_manager_liberation_mono_large;
     try
     {
         // load font from file using helper class
         SDLFontManager font_manager_liberation_mono_large_local(
             sdl_manager,
-            std::shared_ptr<SDL_Renderer>(renderer),
+            //std::shared_ptr<SDL_Renderer>(renderer),
+            renderer,
             font_filename,
             18);
 
@@ -225,27 +239,37 @@ int main(int argc, char* argv[])
                 for(char c: mytext)
                 {
                     write(
-                        std::shared_ptr<SDL_Renderer>(renderer),
+                        //std::shared_ptr<SDL_Renderer>(renderer),
+                        renderer,
                         font_manager_liberation_mono,
-                        c, t_pos_x, pos_y);
+                        c, t_pos_x, pos_y,
+                        true);
                 }
+                write_string(
+                    renderer,
+                    font_manager_liberation_mono_large,
+                    "some random text", t_pos_x, pos_y, true);
 
                 t_pos_x = pos_x;
                 for(char c: mytext)
                 {
                     write_with_background(
-                        std::shared_ptr<SDL_Renderer>(renderer),
+                        //std::shared_ptr<SDL_Renderer>(renderer),
+                        renderer,
                         font_manager_liberation_mono,
                         c, t_pos_x, pos_y + 40,
+                        true,
                         COLOR_GREEN);
                 }
 
                 std::string mystring("this is a test string!");
                 t_pos_x = pos_x;
                 write_string(
-                    std::shared_ptr<SDL_Renderer>(renderer),
+                    //std::shared_ptr<SDL_Renderer>(renderer),
+                    renderer,
                     font_manager_liberation_mono_large,
-                    mystring, t_pos_x, pos_y + 80);
+                    mystring, t_pos_x, pos_y + 80,
+                    false);
 
 
                     /*
@@ -302,7 +326,8 @@ int main(int argc, char* argv[])
                 
 
 
-                SDL_RenderPresent(std::shared_ptr<SDL_Renderer>(renderer).get());
+                //SDL_RenderPresent(std::shared_ptr<SDL_Renderer>(renderer).get());
+                SDL_RenderPresent(renderer.get());
             }
 
 

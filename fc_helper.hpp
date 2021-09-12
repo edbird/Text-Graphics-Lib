@@ -8,6 +8,14 @@ void fontConfigGetFontFilename(
     const unsigned int BUFFER_SIZE,
     const char* font_name_search);
 
-    
+
+#include <string>
+
+// C++ STL version
+std::string fontConfigGetFontFilename(
+    const char* font_name_search);
+
+
+
 
 #endif // FC_HELPER

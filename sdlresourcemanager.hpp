@@ -9,7 +9,15 @@
 // before creating a window
 // function should return a shared pointer to a window?
 
+// TODO: clean this class up, it contains some old code
+// which was present before it was split out into the seperate
+// SDLManager class
 
+// TODO: should this class be able to create and destory multiple windows?
+// or should there be one of these classes per window?
+// probably the former, else this class is just a C++ wrapper around some
+// SDL2 C code
+// which is essentially the same API as SFML
 
 
 #include "exceptiontypes.hpp"
@@ -109,22 +117,36 @@ class SDLResourceManager
     std::weak_ptr<SDL_Window>
     CreateWindow(const SDLManager &manager)
     {
+        const std::string window_title(
+            "SDL Text Graphics Library (C) Ed Bird 2021");
+
+        const unsigned short width = DEFAULT_WINDOW_SIZE_X;
+        const unsigned short height = DEFAULT_WINDOW_SIZE_Y;
+
+        return CreateWindow(manager, window_title, width, height);
+    }
+
+
+
+    std::weak_ptr<SDL_Window>
+    CreateWindow(
+        const SDLManager &manager,
+        const std::string& window_title,
+        const unsigned short window_width,
+        const unsigned short window_height)
+    {
         if(manager.SDLInitSuccess())
         {
             if(m_window.get() == nullptr)
             {
-                std::cout << "Window Size: " << m_window_size_x << " "
-                        << m_window_size_y << std::endl;
+                //std::cout << "Window Size: " << window_width << " "
+                //        << window_height << std::endl;
                         
-                const std::string window_title(
-                    "SDL Text Graphics Library (C) Ed Bird 2021");
-                const unsigned short width = 800;
-                const unsigned short height = 600;
                 m_window.reset(
                     SDL_CreateWindow(
                         window_title.c_str(),
                         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                        width, height,
+                        window_width, window_height,
                         SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE),
                     SDL_DestroyWindow);
 

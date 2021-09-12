@@ -21,7 +21,7 @@
 // might be loaded from the same font manager class
 //
 
-
+// TODO: implement the swap ideom here
 
 class SDLFontManager
 {
@@ -32,7 +32,8 @@ class SDLFontManager
         const SDLFontManager &sdlfontmanager,
         //SDL_Renderer &sdlrenderer,
         const char c,
-        int &x, const int y);
+        int &x, const int y,
+        const bool advance);
 
     
     friend void write_string(
@@ -40,7 +41,8 @@ class SDLFontManager
         const SDLFontManager &sdlfontmanager,
         //SDL_Renderer &sdlrenderer,
         const std::string &text,
-        int &x, const int y);
+        int &x, const int y,
+        const bool advance);
 
 
     friend void write_with_background(
@@ -49,6 +51,7 @@ class SDLFontManager
         //SDL_Renderer &sdlrenderer,
         const char c,
         int &x, const int y,
+        const bool advance,
         const SDL_Color &background_color);
 
 

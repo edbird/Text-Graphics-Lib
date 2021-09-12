@@ -66,7 +66,8 @@ class SDLFontTextureManager
         const SDLFontManager &sdlfontmanager,
         //SDL_Renderer &sdlrenderer,
         const char c,
-        int &x, const int y);
+        int &x, const int y,
+        bool advance);
 
     
     friend void write_string(
@@ -74,7 +75,8 @@ class SDLFontTextureManager
         const SDLFontManager &sdlfontmanager,
         //SDL_Renderer &sdlrenderer,
         const std::string &text,
-        int &x, const int y);
+        int &x, const int y,
+        bool advance);
 
 
     friend void write_with_background(
@@ -83,6 +85,7 @@ class SDLFontTextureManager
         //SDL_Renderer &sdlrenderer,
         const char c,
         int &x, const int y,
+        bool advance,
         const SDL_Color &background_color);
 
 
