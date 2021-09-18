@@ -104,21 +104,25 @@ int main(int argc, char* argv[])
     std::cout << "Matched font filename: " << font_filename << std::endl;
 */
 
-/*
+
     // testing the case of a font that does not exist
+    std::cout << "does this crash? ..." << std::endl;
     try
     {
-        font_filename = fontConfigGetFontFilename("Nothing");
+        std::string font_filename = fontConfigGetFontFilename("Nothing");
+        std::cout << font_filename << std::endl;
     }
-    catch(std::exception &e) // TODO: const ref here? or by value? ask on SO
+    catch(std::exception &e)
     {
         // TODO: test this code as exe
     }
-*/
+
+    std::cout << "Did not crash where expected" << std::endl;
 
     // create window and renderer - required to create font texture
     std::shared_ptr<SDL_Window> window(
-        sdl_resource_manager.CreateWindow(sdl_manager));
+        //sdl_resource_manager.CreateWindow(sdl_manager));
+        sdl_resource_manager.CreateWindow());
 
     std::shared_ptr<SDL_Renderer> renderer(
         sdl_resource_manager.GetWindowRenderer());
@@ -127,42 +131,15 @@ int main(int argc, char* argv[])
     std::cout << "loading font" << std::endl;
 
 
-    // this whole API is kind of shitty
-    // not only do we have some weird declaration outside
-    // of a try statement, we need to use std::move
-    // in a hacky way to get the initialized local object
-    // to be visible outside the try catch statement
-    /*
-    SDLFontManager font_manager_liberation_mono;
-    try
-    {
-        // create font texture
-        SDLFontManager font_manager_liberation_mono_local(
-            sdl_manager,
-            //std::shared_ptr<SDL_Renderer>(renderer),
-            renderer,
-            font_filename,
-            12);
 
-        font_manager_liberation_mono =
-            std::move(font_manager_liberation_mono_local);
-    }
-    catch(const SDLLibException &e)
-    {
-        std::cout << e.what() << std::endl;
-    }
-    catch(const std::exception &e)
-    {
-        std::cout << e.what() << std::endl;
-    }
-    */
-
-    // want to change this to something like this:
     
     std::cout << "init font manager..." << std::endl;
     SDLFontManager font_manager(sdl_manager);
     std::cout << "font manager initialized" << std::endl;
     std::string font_filename_liberation_mono;
+
+    std::string font_filename_times_new_roman;
+
     try
     {
         // TODO: put this in a try-catch block as well?
@@ -182,7 +159,6 @@ int main(int argc, char* argv[])
         // taking a font filename (full path) as an argument.
         // The path to the font to be loaded is obtained from the fc
         // font config functions.
-    std::cout << "point Aa" << std::endl;
         font_manager.LoadFontTexture(renderer, font_filename_liberation_mono, 12);
         // font_manager.LoadFontTexture(font_filename, 12, font_color)
 
@@ -192,19 +168,18 @@ int main(int argc, char* argv[])
         // config function.
         // This function needs to have some way to signal whether the
         // fc font config function succeeded.
-    std::cout << "point A" << std::endl;
         std::string string_times_new_roman("Times New Roman");
+        font_filename_times_new_roman =
         font_manager.LoadFontTextureFromDescription(
             //renderer, string_times_new_roman, 12, font_color);
             renderer, string_times_new_roman, 12);
 
-    std::cout << "point C" << std::endl;
         // testing the case of a font that does not exist
         std::string string_invalid("nothing");
         font_manager.LoadFontTextureFromDescription(
             //renderer, string_invalid, 12, font_color);
             renderer, string_invalid, 12);
-    std::cout << "point D" << std::endl;
+            // seems to return something random
     }
     catch(const SDLLibException &e)
     {
@@ -231,26 +206,7 @@ int main(int argc, char* argv[])
         // functions and classes
 
 
-    /*
-    SDLFontManager font_manager_liberation_mono_large;
-    try
-    {
-        // load font from file using helper class
-        SDLFontManager font_manager_liberation_mono_large_local(
-            sdl_manager,
-            //std::shared_ptr<SDL_Renderer>(renderer),
-            renderer,
-            font_filename,
-            18);
-
-        font_manager_liberation_mono_large =
-            std::move(font_manager_liberation_mono_large_local);
-    }
-    catch(...)
-    {
-        throw;
-    }
-    */
+    // load a larger version of Liberation Mono font
     try
     {
         font_manager.LoadFontTexture(
@@ -272,6 +228,10 @@ int main(int argc, char* argv[])
     std::shared_ptr<SDLFontTexture> font_texture_liberation_mono_large(
         font_manager.GetFontTexture(
             font_filename_liberation_mono, 18));
+
+    std::shared_ptr<SDLFontTexture> font_texture_times_new_roman(
+        font_manager.GetFontTexture(
+            font_filename_times_new_roman, 12));
 
 
     {
@@ -392,7 +352,8 @@ int main(int argc, char* argv[])
                 write_string(
                     //std::shared_ptr<SDL_Renderer>(renderer),
                     renderer,
-                    font_texture_liberation_mono_large,
+                    //font_texture_liberation_mono_large,
+                    font_texture_times_new_roman,
                     mystring, t_pos_x, pos_y + 80,
                     false);
 

@@ -39,17 +39,26 @@ class SDLResourceManager
     // are not used by any of the (updated) functions
     // in this class, these variables can be removed
 
+    // Note: the object SDLManager manager is required
+    // to check whether the SDLManager initialized correctly
+    // however this object is not required by other functions
+    // of this class.
+    // Therefore do not want the inconvenience of passing
+    // this as an argument to all functions, but do want to
+    // retain the check to see if SDLManager initialized
+    // correctly when calling all functions of this class.
+    // Therefore retain a member variable m_sdl_init_success;
+
     public:
 
     // TODO: reference here?
     SDLResourceManager(const SDLManager &manager)
         : m_window_size_x(DEFAULT_WINDOW_SIZE_X)
         , m_window_size_y(DEFAULT_WINDOW_SIZE_Y)
-#if 0
+        , m_sdl_init_success(false)
         //, m_sdl_lib_init_success(false)
-        , m_window_init_success(false)
-        , m_renderer_init_success(false)        // TODO: part of old API, remove
-#endif
+        /*, m_window_init_success(false)
+        , m_renderer_init_success(false)*/        // TODO: part of old API, remove
     {
         //try()
         //window_init();
@@ -68,6 +77,7 @@ class SDLResourceManager
             // (unless the user abuses this by putting a
             // try-catch block around the construction
             // of an instance of this class)
+            m_sdl_init_success = true;
         }
         else
         {
@@ -79,9 +89,10 @@ class SDLResourceManager
 
     ~SDLResourceManager()
     {
-        #if 0
+        /*
         if(m_renderer_init_success)
-        #endif
+        */
+        if(m_sdl_init_success == true)
         {
             // TODO: what if SDL did not init correctly?
             //try
@@ -125,6 +136,10 @@ class SDLResourceManager
     void
     DestroyWindow()
     {
+        // m_sdl_init_success: m_window will only
+        // be non-nullptr if m_sdl_init_success is true
+        // therefore do not check this value (m_sdl_init_success)
+        // here
         if(m_window.get() == nullptr)
         {
             // TODO: this should probably be a slient condition, since
@@ -144,6 +159,7 @@ class SDLResourceManager
     std::shared_ptr<SDL_Window>
     GetWindow()
     {
+        // will return nullptr if m_sdl_init_success is false
         return m_window;
     }
 
@@ -151,29 +167,38 @@ class SDLResourceManager
     std::shared_ptr<SDL_Renderer>
     GetWindowRenderer()
     {
-        //return std::shared_ptr<SDL_Renderer>(
-        //    m_renderer);
+        // will return nullptr if m_sdl_init_success is false
         return m_renderer;
     }
 
 
     std::shared_ptr<SDL_Window>
-    CreateWindow(const SDLManager &manager)
+    //CreateWindow(const SDLManager &manager)
+    CreateWindow()
     {
-        const std::string window_title(
-            "SDL Text Graphics Library (C) Ed Bird 2021");
+        if(m_sdl_init_success == true)
+        {
+            const std::string window_title(
+                "SDL Text Graphics Library (C) Ed Bird 2021");
 
-        const unsigned short width = DEFAULT_WINDOW_SIZE_X;
-        const unsigned short height = DEFAULT_WINDOW_SIZE_Y;
+            const unsigned short width = DEFAULT_WINDOW_SIZE_X;
+            const unsigned short height = DEFAULT_WINDOW_SIZE_Y;
 
-        return CreateWindow(manager, window_title, width, height);
+            //return CreateWindow(manager, window_title, width, height);
+            return CreateWindow(window_title, width, height);
+        }
+        else
+        {
+            throw std::runtime_error(
+                "Error: CreateWindow: SDL lib did not initialize correctly");
+        }
     }
 
 
 
     std::shared_ptr<SDL_Window>
     CreateWindow(
-        const SDLManager &manager,
+        //const SDLManager &manager,
         const std::string& window_title,
         const unsigned short window_width,
         const unsigned short window_height)
@@ -181,7 +206,8 @@ class SDLResourceManager
         // TODO: decide if all functions should check this
         // or if only the constructor should check this, then
         // either remove or make all functions check for this
-        if(manager.SDLInitSuccess())
+        ////if(manager.SDLInitSuccess())
+        if(m_sdl_init_success == true)
         {
             if(m_window.get() == nullptr)
             {
@@ -220,7 +246,12 @@ class SDLResourceManager
                         // set a flag here? TODO:
                         // no flag here, state not stored, errors managed
                         // by emission of exception
+                        
                     }
+                    
+                    // return the successfully created window regardless
+                    // of what happened when initializing the renderer
+                    return m_window;
                 }
             }
             else
@@ -232,11 +263,47 @@ class SDLResourceManager
         else
         {
             throw SDLLibException(
-                "Error in window_init(), SDL library is not initialized");
+                "Error: CreateWindow: SDL lib did not initialize correctly");
+                //"Error in window_init(), SDL library is not initialized");
         }
-
-        return m_window;
     }
+
+
+
+
+    private:
+
+/*#if 0
+    bool m_window_init_success;
+    bool m_renderer_init_success;
+#endif*/
+
+
+    const unsigned int DEFAULT_WINDOW_SIZE_X = 800;
+    const unsigned int DEFAULT_WINDOW_SIZE_Y = 600;
+
+    bool m_sdl_init_success;
+
+    std::shared_ptr<SDL_Window> m_window;
+    unsigned int m_window_size_x;
+    unsigned int m_window_size_y;
+
+    //public:
+    std::shared_ptr<SDL_Renderer> m_renderer;
+
+
+};
+
+
+#endif // SDLRESOURCEMANAGER_HPP
+
+
+
+
+
+
+
+
 
 
 
@@ -350,26 +417,3 @@ class SDLResourceManager
         m_renderer.reset();
     }
 #endif
-
-    private:
-
-#if 0
-    bool m_window_init_success;
-    bool m_renderer_init_success;
-#endif
-
-    const unsigned int DEFAULT_WINDOW_SIZE_X = 800;
-    const unsigned int DEFAULT_WINDOW_SIZE_Y = 600;
-
-    std::shared_ptr<SDL_Window> m_window;
-    unsigned int m_window_size_x;
-    unsigned int m_window_size_y;
-
-    //public:
-    std::shared_ptr<SDL_Renderer> m_renderer;
-
-
-};
-
-
-#endif // SDLRESOURCEMANAGER_HPP

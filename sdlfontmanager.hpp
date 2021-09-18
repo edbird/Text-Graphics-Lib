@@ -445,7 +445,7 @@ class SDLFontManager
     // This function is the same as the LoadFontTexture function
     // but with an additional step of converting a font description
     // to a filename
-    void LoadFontTextureFromDescription(
+    std::string LoadFontTextureFromDescription(
         //const SDLManager &sdlmanager,
         std::shared_ptr<SDL_Renderer> sdlrenderer,
         const std::string& font_filename_search_string,
@@ -480,25 +480,34 @@ class SDLFontManager
 
             // this function takes a c style string, which is a pointer
             // to a null terminated array
-            std::cout << "fontConfigGetFontFilename("
-                      << font_filename_search_string << ")" << std::endl;
+            // DEBUG
+            /*std::cout << "fontConfigGetFontFilename("
+                      << font_filename_search_string << ")" << std::endl;*/
             std::string font_full_path =
                 //fontConfigGetFontFilename(font_filename_search_string.c_str());
                 fontConfigGetFontFilename(font_filename_search_string);
                 // without .c_str() here, this causes a segfault... why?
                 //"Liberation Mono"
+
+            // DEBUG
+            /*
             std::cout << "font_full_path=" << font_full_path << std::endl;
+            */
 
             // TODO: some kind of check that fontConfigGetFontFilename
             // exited correctly and did not fail?
 
             LoadFontTexture(sdlrenderer, font_full_path, font_size);
+
+            return font_full_path;
         }
         else
         {
             throw TTFLibException(
                 "Error in LoadFontTextureFromDescription(): Class SDLFontManager failed to initialize. Probably the TTF library failed to initialize");
         }
+
+        return std::string();
     }
 
 
