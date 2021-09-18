@@ -152,7 +152,7 @@ class SDLResourceManager
     GetWindowRenderer()
     {
         //return std::shared_ptr<SDL_Renderer>(
-            m_renderer);
+        //    m_renderer);
         return m_renderer;
     }
 
