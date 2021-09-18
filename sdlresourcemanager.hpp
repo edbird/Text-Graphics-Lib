@@ -29,8 +29,15 @@
 
 
 // not a singleton
+// this class manages a single SDL window
+// TODO: update so that multiple windows are supported
 class SDLResourceManager
 {
+
+    // Note: Since the boolen success flags
+    // m_window_init_success and m_renderer_init_success
+    // are not used by any of the (updated) functions
+    // in this class, these variables can be removed
 
     public:
 
@@ -39,6 +46,7 @@ class SDLResourceManager
         : m_window_size_x(DEFAULT_WINDOW_SIZE_X)
         , m_window_size_y(DEFAULT_WINDOW_SIZE_Y)
 #if 0
+        //, m_sdl_lib_init_success(false)
         , m_window_init_success(false)
         , m_renderer_init_success(false)        // TODO: part of old API, remove
 #endif
@@ -46,6 +54,26 @@ class SDLResourceManager
         //try()
         //window_init();
         //renderer_init();
+        
+        // TODO: should I implement this?
+        if(manager.SDLInitSuccess())
+        {
+            //m_sdl_lib_init_success = true;
+
+            // this function will not throw if sdl manager
+            // has initialized correctly, which implies that
+            // calling other functions of this class is ok
+            // and that further checks for this are not
+            // required
+            // (unless the user abuses this by putting a
+            // try-catch block around the construction
+            // of an instance of this class)
+        }
+        else
+        {
+            throw TTFLibException(
+                "Error in SDLResourceManager(), TTF library previously failed to initialize");
+        }
     }
 
 
@@ -56,20 +84,23 @@ class SDLResourceManager
         #endif
         {
             // TODO: what if SDL did not init correctly?
-            try
+            //try
             {
                 //renderer_destroy();
                 //window_destroy();
                 DestroyWindow();
             }
-            catch(const SDLLibException &error)
+            /*catch(const SDLLibException &error)
             {
                 // suppress warnings
             }
             catch(const TTFLibException &error)
             {
                 // do nothing
-            }
+            }*/
+            // TODO: Remove try-catch block and do not
+            // throw an error from DestroyWindow()
+            // DONE
         }
     }
 
@@ -96,7 +127,12 @@ class SDLResourceManager
     {
         if(m_window.get() == nullptr)
         {
-            throw SDLLibException("Error, no window to destroy");
+            // TODO: this should probably be a slient condition, since
+            // a window may not have been created, as this requires calling
+            // the CreateWindow() function
+            // DONE
+
+            //throw SDLLibException("Error, no window to destroy");
         }
         else
         {
@@ -105,16 +141,23 @@ class SDLResourceManager
         }
     }
 
+    std::shared_ptr<SDL_Window>
+    GetWindow()
+    {
+        return m_window;
+    }
 
-    std::weak_ptr<SDL_Renderer>
+    // TODO: should these return shared pointers?
+    std::shared_ptr<SDL_Renderer>
     GetWindowRenderer()
     {
-        return std::weak_ptr<SDL_Renderer>(
+        //return std::shared_ptr<SDL_Renderer>(
             m_renderer);
+        return m_renderer;
     }
 
 
-    std::weak_ptr<SDL_Window>
+    std::shared_ptr<SDL_Window>
     CreateWindow(const SDLManager &manager)
     {
         const std::string window_title(
@@ -128,13 +171,16 @@ class SDLResourceManager
 
 
 
-    std::weak_ptr<SDL_Window>
+    std::shared_ptr<SDL_Window>
     CreateWindow(
         const SDLManager &manager,
         const std::string& window_title,
         const unsigned short window_width,
         const unsigned short window_height)
     {
+        // TODO: decide if all functions should check this
+        // or if only the constructor should check this, then
+        // either remove or make all functions check for this
         if(manager.SDLInitSuccess())
         {
             if(m_window.get() == nullptr)
@@ -152,7 +198,8 @@ class SDLResourceManager
 
                 if(m_window.get() == nullptr)
                 {
-                    throw SDLLibException("Error: failed to create window");
+                    throw SDLLibException(
+                        "Error: failed to create window");
                 }
                 else
                 {
@@ -165,7 +212,8 @@ class SDLResourceManager
 
                     if(m_renderer.get() == nullptr)
                     {
-                        throw SDLLibException("Error: failed to create renderer associated to window");
+                        throw SDLLibException(
+                            "Error: failed to create renderer associated to window");
                     }
                     else
                     {
@@ -177,12 +225,14 @@ class SDLResourceManager
             }
             else
             {
-                throw SDLLibException("window already created");
+                throw SDLLibException(
+                    "window already created");
             }
         }
         else
         {
-            throw SDLLibException("Error in window_init(), SDL library is not initialized");
+            throw SDLLibException(
+                "Error in window_init(), SDL library is not initialized");
         }
 
         return m_window;
@@ -297,7 +347,7 @@ class SDLResourceManager
         }
         #endif
 
-            m_renderer.reset();
+        m_renderer.reset();
     }
 #endif
 
@@ -315,7 +365,7 @@ class SDLResourceManager
     unsigned int m_window_size_x;
     unsigned int m_window_size_y;
 
-    public:
+    //public:
     std::shared_ptr<SDL_Renderer> m_renderer;
 
 

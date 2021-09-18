@@ -16,6 +16,12 @@ std::string fontConfigGetFontFilename(
     const char* font_name_search);
 
 
+// TODO: now I need a C++ version with a std::string argument
+// how should I pass this? by value?
+std::string fontConfigGetFontFilename(
+    std::string font_name_search);
 
+
+    
 
 #endif // FC_HELPER
