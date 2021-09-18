@@ -4,7 +4,7 @@
 
 
 
-
+#if 0
 void SDLFontManager::font_manager_init(
     const SDLManager &sdlmanager,
     std::shared_ptr<SDL_Renderer> sdlrenderer,
@@ -18,7 +18,8 @@ void SDLFontManager::font_manager_init(
     // such that storage will be freed after use
 
     std::shared_ptr<TTF_Font> m_font;
-    std::unique_ptr<SDL_Surface> m_chars_surface;
+    // TODO: m_chars_surface is not used here, remove?
+    //std::unique_ptr<SDL_Surface> m_chars_surface;
 
 
 
@@ -55,7 +56,7 @@ void SDLFontManager::font_manager_init(
 
                 // create the FontTextureManager
                 m_sdlfonttexturemanager.reset(
-                    new SDLFontTextureManager(
+                    new SDLFontTexture(
                         sdlrenderer,
                         //*this,
                         m_font,
@@ -72,29 +73,35 @@ void SDLFontManager::font_manager_init(
                 {
                     m_font_manager_init_success = true;
                     // TODO: maybe can remove this variable, does nothing?
+
+                    // NOTE: this variable tracks whether the memory was 
+                    // allocated and not whether the actual FontTexture
+                    // was able to initialize successfully
                 }
                 else
                 {
                     // TODO: what type of error here?
-                    throw SDLLibException("error in SDLFontManager::font_manager_init, failed to allocate instance of SDLFontTextureManager");
+                    throw SDLLibException("error in SDLFontManager::font_manager_init, failed to allocate instance of SDLFontTexture");
                 }
             }
         }
         else
         {
             std::cout << "Error: Could not load font from file: "
-                    << font_path << std::endl;
+                      << font_path << std::endl;
             std::cout << TTF_GetError() << std::endl;
 
-            throw TTFLibException("Error in font_init(), failed to load font from file");
+            throw TTFLibException(
+                "Error in font_init(), failed to load font from file");
         }
     }
     else
     {
-        throw TTFLibException("Error in font_init(), TTF library previously failed to initialize");
+        throw TTFLibException(
+            "Error in font_init(), TTF library previously failed to initialize");
     }
 }
-
+#endif
 
 
 

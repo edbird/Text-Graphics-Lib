@@ -9,6 +9,8 @@
 
 #include <stdexcept>
 
+#include <iostream>
+
 
 void fontConfigGetFontFilename(
     char return_buffer[],
@@ -52,11 +54,30 @@ void fontConfigGetFontFilename(
 }
 
 
+// TODO: could write a version of this function
+// which takes a std::string, however at the moment
+// there is no need for such a thing from the currently
+// existing code
+
+
+
+// C++ STL version (other verion)
+// TODO: pass font_name_search by value?
+std::string fontConfigGetFontFilename(
+    std::string font_name_search)
+{
+	std::cout << __func__ << ": " << font_name_search << std::endl;
+	return fontConfigGetFontFilename(font_name_search.c_str());
+}
+
 
 // C++ STL version
+// this function is the native one, because of:
+// (const FcChar8*)font_name_search cast
 std::string fontConfigGetFontFilename(
     const char* font_name_search)
 {
+	std::cout << __func__ << ": " << font_name_search << std::endl;
 
 	std::string ret;
 
@@ -68,7 +89,21 @@ std::string fontConfigGetFontFilename(
     FcInit();
 	FcConfig* config = FcInitLoadConfigAndFonts();
 	FcPattern* pat = FcNameParse((const FcChar8*)font_name_search);
-	FcConfigSubstitute(config, pat, FcMatchPattern);
+	FcBool success = FcConfigSubstitute(config, pat, FcMatchPattern);
+	/*if(success == FcTrue)
+	{
+
+	}
+	else*/
+	if(success == FcFalse)
+	{
+		throw std::runtime_error(
+			"Error: fontConfigGetFontFilename: FcConfigSubstitute failed");
+	}
+	else
+	{
+
+	}
 	FcDefaultSubstitute(pat);
 
 	char* fontFile;
@@ -83,24 +118,45 @@ std::string fontConfigGetFontFilename(
 		if(FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
 		{
 			fontFile = (char*)file;
-			const unsigned int BUFFER_SIZE = 4096;
+			const int BUFFER_SIZE = 4096;
 			char buffer[BUFFER_SIZE];
             int n = snprintf(buffer, BUFFER_SIZE, "%s", fontFile);
 
-			if(n >= BUFFER_SIZE)
+			if(n < 0)
 			{
+				throw std::runtime_error(
+					"Error: fontConfigGetFontFilename: snprintf encoding error");
+			}
+			else if(n >= BUFFER_SIZE)
+			{
+				//std::cout << "Overflow!" << std::endl;
+				// overflow (static size buffer)
+				// dynamically allocate storage and re-try
+
 				// overflow
 				const int d_buffer_size = n + 1;
 				char *d_buffer = new char[d_buffer_size];
 
 				int nn = snprintf(d_buffer, d_buffer_size, "%s", fontFile);
-				if(nn >= d_buffer_size)
+				// negative value = encoding error
+				// otherwise, number of bytes written
+				// if n < d_buffer_size, then success
+				// else error
+
+				if(nn < 0)
 				{
-					throw std::runtime_error("Error: fontConfigGetFontFilename()");
+					throw std::runtime_error(
+						"Error: fontConfigGetFontFilename: snprintf encoding error");
+				}
+				else if(nn >= d_buffer_size)
+				{
+					throw std::runtime_error(
+						"Error: fontConfigGetFontFilename: buffer overflow");
 				}
 				else
 				{
-					ret = d_buffer;
+					std::cout << d_buffer << std::endl;
+					ret = std::string(d_buffer);
 				}
 
 				delete [] d_buffer;
@@ -108,9 +164,18 @@ std::string fontConfigGetFontFilename(
 			}
 			else
 			{
-				ret = buffer;
+				std::cout << buffer << std::endl;
+				ret = std::string(buffer);
 			}
 		}
+		else
+		{
+			std::cout << "Error: font not matched? (2)" << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "Error: font not matched? (1)" << std::endl;
 	}
 	FcPatternDestroy(font);
 
@@ -118,5 +183,6 @@ std::string fontConfigGetFontFilename(
 	FcConfigDestroy(config);
 	FcFini();
 
+	std::cout << "return: " << ret << std::endl;
     return ret;
 }

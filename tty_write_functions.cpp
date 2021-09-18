@@ -5,9 +5,11 @@
 // move them
 
 
-// moved from sdlfonttexturemanager.hpp
+// moved from sdlfonttexture.hpp
 
 #include "sdlhelper.hpp"
+
+#include "sdlfonttexture.hpp"
 
 
 // TODO: these are the autoadvance versions of the functions
@@ -17,12 +19,12 @@
 // documentation notes on argument `advance`
 //
 // all printable characters have a width, which is stored in the object
-// sdlfonttexturemanager->map_rendered_chars_advance
+// sdlfonttexture->map_rendered_chars_advance
 // 
 
 void write(
     std::shared_ptr<SDL_Renderer> sdlrenderer,
-    const SDLFontManager &sdlfontmanager,
+    std::shared_ptr<SDLFontTexture> sdlfonttexture,
     //SDL_Renderer &sdlrenderer,
     const char c,
     int &x, const int y,
@@ -39,11 +41,11 @@ void write(
     // TODO: get the index, and the offset by iterating through
     // the map
 
-    std::shared_ptr<SDLFontTextureManager> sdlfonttexturemanager
-        = sdlfontmanager.m_sdlfonttexturemanager;
+    /*std::shared_ptr<SDLFontTexture> sdlfonttexture
+        = sdlfontmanager.m_sdlfonttexturemanager;*/
 
-    SDL_Rect rsrc = sdlfonttexturemanager->map_rendered_chars_srect.at(c);
-    SDL_Rect rdst = sdlfonttexturemanager->map_rendered_chars_drect.at(c);
+    SDL_Rect rsrc = sdlfonttexture->map_rendered_chars_srect.at(c);
+    SDL_Rect rdst = sdlfonttexture->map_rendered_chars_drect.at(c);
     //SDL_Rect rdst = {x, y, rsrc.w, rsrc.h};
 
     //std::cout << "x=" << x << std::endl;
@@ -53,11 +55,11 @@ void write(
 
     SDL_RenderCopy(
         sdlrenderer.get(),
-        sdlfonttexturemanager->m_chars_texture.get(),
+        sdlfonttexture->m_chars_texture.get(),
         &rsrc, &rdst);
 
     const int x_advance =
-        sdlfonttexturemanager->map_rendered_chars_advance.at(c);
+        sdlfonttexture->map_rendered_chars_advance.at(c);
     x_copy += x_advance;
 
     //std::cout << "advance=" << advance << std::endl;
@@ -89,7 +91,7 @@ void write(
 
 void write_with_background(
     std::shared_ptr<SDL_Renderer> sdlrenderer,
-    const SDLFontManager &sdlfontmanager,
+    std::shared_ptr<SDLFontTexture> sdlfonttexture,
     //SDL_Renderer &sdlrenderer,
     const char c,
     int &x, const int y,
@@ -100,11 +102,8 @@ void write_with_background(
     int x_copy = x;
     int y_copy = y;
 
-    std::shared_ptr<SDLFontTextureManager> sdlfonttexturemanager
-        = sdlfontmanager.m_sdlfonttexturemanager;
-
-    SDL_Rect rsrc = sdlfonttexturemanager->map_rendered_chars_srect.at(c);
-    SDL_Rect rdst = sdlfonttexturemanager->map_rendered_chars_drect.at(c);
+    SDL_Rect rsrc = sdlfonttexture->map_rendered_chars_srect.at(c);
+    SDL_Rect rdst = sdlfonttexture->map_rendered_chars_drect.at(c);
     //SDL_Rect rdst = {x, y, rsrc.w, rsrc.h};
 
     rdst.x += x_copy;
@@ -114,11 +113,11 @@ void write_with_background(
     SDL_RenderFillRect(sdlrenderer.get(), &rdst);
     SDL_RenderCopy(
         sdlrenderer.get(),
-        sdlfonttexturemanager->m_chars_texture.get(),
+        sdlfonttexture->m_chars_texture.get(),
         &rsrc, &rdst);
 
     const int x_advance =
-        sdlfonttexturemanager->map_rendered_chars_advance.at(c);
+        sdlfonttexture->map_rendered_chars_advance.at(c);
     x_copy += x_advance;
 
     if(advance == true)
@@ -131,7 +130,7 @@ void write_with_background(
 
 void write_string(
     std::shared_ptr<SDL_Renderer> sdlrenderer,
-    const SDLFontManager &sdlfontmanager,
+    std::shared_ptr<SDLFontTexture> sdlfonttexture,
     //SDL_Renderer &sdlrenderer,
     const std::string &text,
     int &x, const int y,
@@ -140,9 +139,6 @@ void write_string(
 
     int x_copy = x;
     int y_copy = y;
-
-    std::shared_ptr<SDLFontTextureManager> sdlfonttexturemanager
-        = sdlfontmanager.m_sdlfonttexturemanager;
 
     //int local_x = x;
     for(auto c: text)
@@ -155,12 +151,12 @@ void write_string(
         // otherwise all the characters of the string are printed on
         // top of each other, which makes no sense for a string printing
         // function
-        write(sdlrenderer, sdlfontmanager, c, x_copy, y_copy, true);
+        write(sdlrenderer, sdlfonttexture, c, x_copy, y_copy, true);
         //write(sdlrenderer, sdlfontmanager, c, local_x, y);
 
     /*
-        SDL_Rect rsrc = sdlfonttexturemanager->map_rendered_chars_srect.at(c);
-        SDL_Rect rdst = sdlfonttexturemanager->map_rendered_chars_drect.at(c);
+        SDL_Rect rsrc = sdlfonttexture->map_rendered_chars_srect.at(c);
+        SDL_Rect rdst = sdlfonttexture->map_rendered_chars_drect.at(c);
         //SDL_Rect rdst = {x, y, rsrc.w, rsrc.h};
 
         rdst.x += local_x;
@@ -170,11 +166,11 @@ void write_string(
         SDL_RenderFillRect(sdlrenderer.get(), &rdst);
         SDL_RenderCopy(
             sdlrenderer.get(),
-            sdlfonttexturemanager->m_chars_texture.get(),
+            sdlfonttexture->m_chars_texture.get(),
             &rsrc, &rdst);
 
         const int advance =
-            sdlfonttexturemanager->map_rendered_chars_advance.at(c);
+            sdlfonttexture->map_rendered_chars_advance.at(c);
         local_x += advance;
     */
     }

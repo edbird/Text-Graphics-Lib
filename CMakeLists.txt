@@ -6,6 +6,12 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_BUILD_TYPE DEBUG)
 
+# Set default compile flags for GCC
+if(CMAKE_COMPILER_IS_GNUCXX)
+    message(STATUS "GCC detected, adding compile flags")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra")
+endif(CMAKE_COMPILER_IS_GNUCXX)
+
 set(CMAKE_MODULE_PATH /home/ecb/Worlds-Best-Text-Editor-3/Text-Graphics-Lib)
 
 find_package(SDL2 REQUIRED)
@@ -13,7 +19,7 @@ find_package(SDL2TTF REQUIRED)
 include_directories(textgraphicslib ${SDL2_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIR})
 
 set(SOURCE_FILES main.cpp)
-set(TEXTGRAPHICSLIB_SOURCE_FILES fc_helper.cpp sdlfontmanager.cpp sdlfontmanager_fontmanagerinitsuccess.cpp sdlfonttexturemanager.cpp fc_helper.cpp sdlhelper.cpp tty_write_functions.cpp)
+set(TEXTGRAPHICSLIB_SOURCE_FILES fc_helper.cpp sdlfontmanager.cpp sdlfontmanager_fontmanagerinitsuccess.cpp sdlfonttexture.cpp fc_helper.cpp sdlhelper.cpp tty_write_functions.cpp)
 
 add_library(textgraphicslib ${TEXTGRAPHICSLIB_SOURCE_FILES})
 target_link_libraries(textgraphicslib PUBLIC SDL2::SDL2)
