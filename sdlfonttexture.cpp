@@ -15,6 +15,10 @@ void SDLFontTexture::set_glyph_metrics(
     std::cout << "font_ascent=" << font_ascent << std::endl;
 
     m_glyphmetrics_success = false;
+    //m_font_texture_init_success = m_glyphmetrics_success & m_font_render_success;
+    m_font_texture_init_success = false;
+    // NOTE: this needs to be set to false, otherwise this logic only
+    // works once
 
     // get the glyph metrics for each character to be rendered
     ////if(sdlfontmanager.FontManagerInitSuccess())
@@ -24,8 +28,8 @@ void SDLFontTexture::set_glyph_metrics(
     // the *this pointer must exist and therefore this
     // check is redundant
 
-        // technically only need the init function to have succeeded
-        // to be able to call this function body
+    // technically only need the init function to have succeeded
+    // to be able to call this function body
     {
         map_rendered_chars_advance.clear();
         map_rendered_chars_srect.clear();
@@ -84,7 +88,8 @@ void SDLFontTexture::set_glyph_metrics(
                         << std::endl;
                 */
                 map_rendered_chars_srect[c] = rs;
-                map_rendered_chars_drect[c] = rd; // TODO: currently srcrect and dstrect are the same!!!
+                map_rendered_chars_drect[c] = rd;
+                // TODO: currently srcrect and dstrect are the same!!!
 
                 rx_offset += advance;
             }
@@ -112,6 +117,10 @@ void SDLFontTexture::render_ascii_chars(
 {
     
     m_font_render_success = false;
+    //m_font_texture_init_success = m_glyphmetrics_success & m_font_render_success;
+    m_font_texture_init_success = false;
+    // NOTE: this needs to be set to false, otherwise this logic only
+    // works once
 
     // for: add characters to be rendered to string
 
@@ -145,11 +154,6 @@ void SDLFontTexture::render_ascii_chars(
         // at this point can now render any character from the surface
 
         // convert the surface into a renderable texture
-
-        // TODO: what is the best way to get this
-        //std::shared_ptr<SDL_Renderer> renderer(); // TODO
-        //SDL_Renderer *renderer = sdl_manager.m_renderer;
-
         if(sdlrenderer.get() != nullptr)
         {
             // TODO: since in the same function, do not need this flag
