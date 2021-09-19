@@ -136,8 +136,8 @@ int main(int argc, char* argv[])
     std::cout << "init font manager..." << std::endl;
     SDLFontManager font_manager(sdl_manager);
     std::cout << "font manager initialized" << std::endl;
-    std::string font_filename_liberation_mono;
 
+    std::string font_filename_liberation_mono;
     std::string font_filename_times_new_roman;
 
     try
