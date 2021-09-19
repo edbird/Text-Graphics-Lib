@@ -51,6 +51,19 @@
 class SDLFontManager;
 
 
+// TODO: this class does not check to see if the sdl ttf library
+// initialized correctly
+// if I wanted to have this check, I would either have to pass
+// a reference to the sdlmanager to each function which depends
+// on the ttf library, or find another solution
+//
+// possible alteratives might include making this class a member
+// of the SDLFontManager class? or something entirely different?
+//
+// alternatively, this may not be relevant. for example, the
+// constructor takes a std::shared_ptr<TTF_Font> object, and
+// presumably if the font is valid then the ttf library must
+// have initialized successfully
 class SDLFontTexture
 {
 
