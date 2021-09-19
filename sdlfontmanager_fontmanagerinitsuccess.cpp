@@ -2,7 +2,7 @@
 
 
 
-bool SDLFontManager::FontManagerInitSuccess() const
+bool SDLFontManager::TTFLibInitSuccess() const
 {
-    return m_font_manager_init_success;
+    return m_sdl_ttf_init_success;
 }
