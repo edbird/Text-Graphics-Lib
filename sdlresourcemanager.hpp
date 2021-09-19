@@ -67,8 +67,6 @@ class SDLResourceManager
         // TODO: should I implement this?
         if(manager.SDLInitSuccess())
         {
-            //m_sdl_lib_init_success = true;
-
             // this function will not throw if sdl manager
             // has initialized correctly, which implies that
             // calling other functions of this class is ok
