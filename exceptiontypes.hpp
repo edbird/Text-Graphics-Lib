@@ -2,12 +2,12 @@
 #define EXCEPTIONTYPES_HPP
 
 
-//#include <exception>
+#include <exception>
 #include <string>
 
 
 
-class ExceptionBase
+class ExceptionBase : public std::exception
 {
 
     public:
@@ -23,9 +23,10 @@ class ExceptionBase
 
     }
 
-    std::string what() const
+    virtual
+    const char* what() const noexcept
     {
-        return m_what;
+        return m_what.c_str();
     }
 
 
