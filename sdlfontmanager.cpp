@@ -6,6 +6,7 @@ SDLFontManager::LoadFontTexture(
     std::shared_ptr<SDL_Renderer> sdlrenderer,
     const std::string& font_full_path,
     const int font_size
+    , std::string &valid_ascii_font_chars_string
     //SDL_Color font_color
     )
 {
@@ -38,6 +39,8 @@ SDLFontManager::LoadFontTexture(
     // TODO: perform this check first, before bothering
     // to do a heavyweight operation of loading the texture
     std::string unique_key(fontloadproperties.GetUniqueKey());
+
+    std::cout << "unique_key=" << unique_key << std::endl;
     
     // check if key exists in map first, as this
     // is a fast operation, and what follows is slow
@@ -75,29 +78,40 @@ SDLFontManager::LoadFontTexture(
             if(m_font.get() != nullptr)
             {
 
-                // NOTE: presumably these cannot fail
-                const int font_line_skip = TTF_FontLineSkip(m_font.get());
-                const int font_ascent = TTF_FontAscent(m_font.get());
-
                 // this block is just to wrap the font_chars_string
                 // object
                 {
                     // TODO: const here?
-                    const std::string font_chars_string =
-                        init_font_chars_string();
+                    /*const std::string font_chars_string =
+                        init_font_chars_string();*/
+                    // TODO: this function has now been removed because (I thought)
+                    // it was not used anywhere... turns out it WAS used here, but
+                    // it SHOULD be moved inside of SDLFontTexture regardless
 
                     std::shared_ptr<SDLFontTexture> sdlfonttexture;
 
                     // create the FontTextureManager
+                    // TODO: this needs to return the renderable characters
+                    // for now do this using std::string, but some fonts
+                    // support unicode / 16bit codes, therefore a std::string
+                    // is not sufficient (but perhaps a wide string is)
+                    /*std::string valid_ascii_font_chars_string;*/
                     sdlfonttexture.reset(
                         new SDLFontTexture(
                             sdlrenderer,
                             //*this,
                             m_font,
                             font_size,
-                            font_line_skip,
-                            font_ascent,
-                            font_chars_string));
+                            ////font_line_skip,
+                            ////font_ascent,
+                            valid_ascii_font_chars_string
+                            /*,
+                            font_chars_string*/));
+                    // this will (may?) fail here if font_chars_string
+                    // contains invalid characters which cannot be rendered
+                    // ... the point of failure was confusing because of the
+                    // throwing and then catching of errors
+
 
                     if(sdlfonttexture.get() != nullptr)
                     {
@@ -136,6 +150,8 @@ SDLFontManager::LoadFontTexture(
 
         throw TTFLibException(serror);
     }
+
+    std::cout << "LoadFontTexture return ok" << std::endl;
 }
 
 
@@ -146,9 +162,11 @@ SDLFontManager::LoadFontTextureFromDescription(
     std::shared_ptr<SDL_Renderer> sdlrenderer,
     const std::string& font_filename_search_string,
     const int font_size
+    , std::string &valid_ascii_font_chars_string
     //SDL_Color font_color
     )
 {
+
     // both functions start with the code to check that the sdlmanager
     // has been initialized correctly
 
@@ -170,15 +188,18 @@ SDLFontManager::LoadFontTextureFromDescription(
             fontConfigGetFontFilename(font_filename_search_string);
 
         // DEBUG
-        /*
+        
         std::cout << "font_full_path=" << font_full_path << std::endl;
-        */
+        
 
         // TODO: some kind of check that fontConfigGetFontFilename
         // exited correctly and did not fail?
 
-        LoadFontTexture(sdlrenderer, font_full_path, font_size);
+        LoadFontTexture(sdlrenderer, font_full_path, font_size
+            , valid_ascii_font_chars_string);
+        std::cout << "finished LoadFromTexture function, return: " << font_full_path << std::endl;
 
+        // Valid return path
         return font_full_path;
     }
     else
@@ -187,7 +208,9 @@ SDLFontManager::LoadFontTextureFromDescription(
             "Error in LoadFontTextureFromDescription(): Class SDLFontManager failed to initialize. Probably the TTF library failed to initialize");
     }
 
-    return std::string();
+    // failure return path - never reached?
+    // removed because it was confusing
+    //return std::string();
 }
 
 
@@ -226,6 +249,16 @@ SDLFontManager::GetFontTexture(
 }
 
 
+// TODO: in order for this function to check if each character
+// can be rendered by the font, it needs to call the function
+// TTF_GlyphIsProvided, which requires a TTF_Font object
+// therefore this function is not universal and needs to be
+// placed in the sdlfonttexture class
+//
+// Note: This function is NOT used in this class. It WAS used
+// in the removed function: SDLFontManager::font_manager_init
+// but this function no longer exists
+/*
 std::string
 SDLFontManager::init_font_chars_string() const
 {
@@ -233,21 +266,28 @@ SDLFontManager::init_font_chars_string() const
 
     // add characters to be rendered to string
     std::string font_chars_string;
-    for(char c = ' '; c <= '~'; ++ c)
+    //for(char c = ' '; c <= '~'; ++ c)
+
+    // try to initialize all available glyphs
+    //int is_glyph_provided = TTF_GlyphIsProvided(font, code);
+    const int c_start = 0; // ' '
+    const int c_end = (int)255; // '~'
+    for(int c = c_start; c <= c_end; ++ c)
     {
-        font_chars_string.push_back(c);
+        unsigned char unsigned_c = (unsigned char)c;
+        font_chars_string.push_back(unsigned_c);
     }
 
     return font_chars_string;
 }
-
+*/
 
 
 // TODO: check the sdlfonttexture.cpp file and ensure all the code here
 // has been migrated there
 // currently a check for the correct initialization of the sdlmanager
 // (sdl libs) is missing
-#if 0
+/*
 void SDLFontManager::font_manager_init(
     const SDLManager &sdlmanager,
     std::shared_ptr<SDL_Renderer> sdlrenderer,
@@ -344,8 +384,7 @@ void SDLFontManager::font_manager_init(
             "Error in font_init(), TTF library previously failed to initialize");
     }
 }
-#endif
-
+*/
 
 
 

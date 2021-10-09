@@ -105,6 +105,11 @@ class SDLFontTexture
         const SDL_Color &background_color);
 
 
+    friend void debug_draw_chars_texture(
+        std::shared_ptr<SDL_Renderer> sdlrenderer,
+        std::shared_ptr<SDLFontTexture> sdlfonttexture,
+        const int x, const int y);
+
 
     public:
 
@@ -114,21 +119,26 @@ class SDLFontTexture
             //const SDLFontManager &sdlfontmanager,
             const std::shared_ptr<TTF_Font> sdlfont,
             const int font_size,
-            const int font_line_skip,
-            const int font_ascent,
-            const std::string &font_chars_string)
+            ////const int font_line_skip,
+            ////const int font_ascent,
+            /*const std::string &font_chars_string*/
+            std::string &valid_ascii_font_chars_string) // the valid (renderable) characters are returned via this string object - TODO change to wide string?
         : m_font_texture_init_success(false)
         , m_glyphmetrics_success(false)
         , m_font_render_success(false)
         , m_font_size(font_size)
-        , m_font_line_skip(font_line_skip)
-        , m_font_ascent(font_ascent)
+        ////, m_font_line_skip(font_line_skip)
+        ////, m_font_ascent(font_ascent) // note removed, as code has been moved inside this constructor to query these values
+        , m_font_line_skip(0)
+        , m_font_ascent(0)
         // NOTE: store the font size unless it is
         // needed for reference later
         // this value is used when opening the font
         // file and is not actually used by the rendering
         // function
     {
+
+        /*
         set_glyph_metrics(
             //sdlfontmanager,
             sdlfont,
@@ -140,6 +150,57 @@ class SDLFontTexture
             sdlfont,
             sdlrenderer,
             font_chars_string);
+        */
+
+        /*
+        std::string valid_font_chars_string =
+            check_ascii_chars(
+                sdlfont,
+                font_chars_string);
+        */
+
+        // moved from sdlfontmanager::LoadFontTexture()
+        // NOTE: presumably these cannot fail
+        /*const int*/ m_font_line_skip = TTF_FontLineSkip(/*m_font*/ sdlfont.get());
+        /*const int*/ m_font_ascent = TTF_FontAscent(/*m_font*/ sdlfont.get());
+        // TODO: these should be moved INSIDE the SDLFontTexture
+        // constructor - it is pointless to retain these variables
+        // here as they are not used by this function or this class
+
+        valid_ascii_font_chars_string =
+            init_valid_font_chars_string(sdlfont);
+
+        // DEBUG
+        std::cout << "valid_ascii_font_chars_string="
+                  << valid_ascii_font_chars_string
+                  << std::endl;
+
+        set_glyph_metrics(
+            //sdlfontmanager,
+            sdlfont,
+            m_font_ascent,
+            valid_ascii_font_chars_string);
+
+        render_ascii_chars(
+            //sdlfontmanager,
+            sdlfont,
+            sdlrenderer,
+            valid_ascii_font_chars_string);
+
+        /*
+        std::string font_chars_string_request = font_chars_string;
+
+        // TODO: this function
+        set_glyph_metrics_safe(
+            sdlfont,
+            font_ascent,
+            font_chars_string_request);
+
+        render_ascii_chars_safe(
+            sdlfont,
+            sdlrenderer,
+            font_chars_string_request);
+        */
     }
 
     ~SDLFontTexture()
@@ -155,6 +216,12 @@ class SDLFontTexture
         }
     }
 
+    std::string check_ascii_chars(
+        const std::shared_ptr<TTF_Font> &sdlfont,
+        const std::string &requested_font_chars_string);
+
+    std::string init_valid_font_chars_string(std::shared_ptr<TTF_Font> sdlfont);
+
 
     int GetFontAscent() const
     {
@@ -164,6 +231,87 @@ class SDLFontTexture
     int GetFontLineSkip() const
     {
         return m_font_line_skip;
+    }
+
+
+    int GetWidestCharacterAdvance() const
+    {
+        int width_max = -1;
+        for(const auto& it: map_rendered_chars_advance)
+        {
+            int width = it.second;
+
+            // DEBUG
+            if(width > width_max)
+            {
+                std::cout << "new widest character found (advance): " << it.first
+                          << " width=" << it.second << std::endl;
+            }
+
+            width_max = std::max(width_max, width);
+        }
+        return width_max;
+    }
+
+    // return the font advance, calculated from the width
+    // of the "W" character, which should be the largest
+    // character in the font set (probably)
+    // TODO: probably change the name to match the below function
+    int GetCharacterWidthW() const
+    {
+        // can use either map_rendered_chars_srect or
+        // map_rendered_chars_drect here
+        //int width = map_rendered_chars_drect
+        int width = map_rendered_chars_srect.at('W').w;
+        return width;
+    }
+
+    int GetCharacterAdvanceW() const
+    {
+        // can use either map_rendered_chars_srect or
+        // map_rendered_chars_drect here
+        //int width = map_rendered_chars_drect
+        int width = map_rendered_chars_advance.at('W');
+        return width;
+    }
+
+    int GetCharacterWidthUnderscore() const
+    {
+        // can use either map_rendered_chars_srect or
+        // map_rendered_chars_drect here
+        //int width = map_rendered_chars_drect
+        int width = map_rendered_chars_srect.at('_').w;
+        return width;
+    }
+
+    int GetCharacterAdvanceUnderscore() const
+    {
+        // can use either map_rendered_chars_srect or
+        // map_rendered_chars_drect here
+        //int width = map_rendered_chars_drect
+        int width = map_rendered_chars_advance.at('_');
+        return width;
+    }
+
+
+    // return the widest character
+    int GetWidestCharacterWidth() const
+    {
+        int width_max = -1;
+        for(const auto& it: map_rendered_chars_srect)
+        {
+            int width = it.second.w;
+
+            // DEBUG
+            if(width > width_max)
+            {
+                std::cout << "new widest character found: " << it.first
+                          << " width=" << it.second.w << std::endl;
+            }
+
+            width_max = std::max(width_max, width);
+        }
+        return width_max;
     }
 
 
@@ -194,6 +342,12 @@ class SDLFontTexture
         const std::shared_ptr<SDL_Renderer> sdlrenderer,
         const std::string &font_chars_string);
 
+    // a function which fills the valid characters map
+    // map_rendered_chars_glyph_value_valid
+    void render_ascii_chars_safe(
+        const std::shared_ptr<TTF_Font> &sdlfont,
+        const std::shared_ptr<SDL_Renderer> sdlrenderer,
+        const std::string &font_chars_string_request);
 
 
 
@@ -226,6 +380,23 @@ class SDLFontTexture
 
     // only the final texture is saved here
     std::shared_ptr<SDL_Texture> m_chars_texture;
+
+    // problem with trying to render characters outside of the range
+    // ' ' to '~'
+    // different fonts may have different ranges of renderable characters
+    // and these are not known in advance, but can be determined using
+    // the function call TTF_GlyphIsProvided()
+    //
+    // this is a bit of hack - but provides a way to determine if a
+    // glyph is valid
+    //
+    // the process is as follows: use the function TTF_GlyphIsProvided()
+    // to determine if a glyph is valid. If it is, register this in the
+    // valid glyph values map, and add the character value code to the
+    // string which is to be rendered. Then render that string.
+
+    //TTF_GlyphIsProvided
+    std::map<char, bool> map_rendered_chars_glyph_value_valid;
 
 
 };

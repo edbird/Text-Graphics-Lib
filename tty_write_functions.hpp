@@ -48,6 +48,16 @@ void write_string(
     const bool advance);
 
 
+void write_custom_symbol(
+    std::shared_ptr<SDL_Renderer> sdlrenderer,
+    int &x, const int y,
+    const bool advance);
+
+
+void debug_draw_chars_texture(
+    std::shared_ptr<SDL_Renderer> sdlrenderer,
+    std::shared_ptr<SDLFontTexture> sdlfonttexture,
+    const int x, const int y);
 
 
 #endif // TTY_WRITE_FUNCTIONS_HPP

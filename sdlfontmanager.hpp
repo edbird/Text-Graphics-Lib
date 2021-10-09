@@ -31,7 +31,9 @@
 class SDLFontManager
 {
 
-
+// TODO: note these are no longer needed here, no member variables
+// accessed
+/*
     friend void write(
         std::shared_ptr<SDL_Renderer> sdlrenderer,
         //const SDLFontManager &sdlfontmanager,
@@ -61,7 +63,7 @@ class SDLFontManager
         int &x, const int y,
         const bool advance,
         const SDL_Color &background_color);
-
+*/
 
 
     // Note: The field
@@ -180,6 +182,7 @@ class SDLFontManager
         std::shared_ptr<SDL_Renderer> sdlrenderer,
         const std::string& font_full_path,
         const int font_size
+        , std::string &valid_ascii_font_chars_string
         //SDL_Color font_color
         );
 
@@ -192,6 +195,7 @@ class SDLFontManager
         std::shared_ptr<SDL_Renderer> sdlrenderer,
         const std::string& font_filename_search_string,
         const int font_size
+        , std::string &valid_ascii_font_chars_string
         //SDL_Color font_color
         );
 
@@ -212,9 +216,11 @@ class SDLFontManager
 
     // TODO: update this function
     // create a string containing the characters to render
-    std::string init_font_chars_string() const;
+    /*std::string init_font_chars_string() const;*/
     // Notes: This function is used from sdlfontmanager.cpp
     //
+    // this function has been removed: 2021-10-07
+    // it was confusing to leave in since it is not used
 
 
 

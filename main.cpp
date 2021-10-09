@@ -69,7 +69,7 @@ int index_of_printable_char(const char c)
 
 
 
-
+#define FONT_TIMES_NEW_ROMAN 1
 int main(int argc, char* argv[])
 {
 
@@ -138,29 +138,48 @@ int main(int argc, char* argv[])
     std::cout << "font manager initialized" << std::endl;
 
     std::string font_filename_liberation_mono;
+    # if FONT_TIMES_NEW_ROMAN
     std::string font_filename_times_new_roman;
+    #endif
+
+    // Note: needed in main loop code (scope)
+    std::string valid_ascii_font_chars_string_liberation_mono;
 
     try
     {
+
+
         // TODO: put this in a try-catch block as well?
         // No: Don't need to because it was already inside a try-catch block
         std::string string_liberation_mono("Liberation Mono");
+        std::cout << "LoadFontTexture: " << string_liberation_mono << std::endl;
 
-        std::string font_filename =
+        /*std::string font_filename =*/
             // TODO: change back, calling the c-style argument version
             // SEGFAULT?
             //fontConfigGetFontFilename(string_liberation_mono.c_str());
+        font_filename_liberation_mono =
             fontConfigGetFontFilename(string_liberation_mono);
-        std::cout << "font_filename=" << font_filename << std::endl;
+        /*std::cout << "font_filename=" << font_filename << std::endl;*/
+        std::cout << "font_filename_liberation_mono=" << font_filename_liberation_mono << std::endl;
 
-        font_filename_liberation_mono = font_filename;
+        /*font_filename_liberation_mono = font_filename;*/
 
         // this function loads a font using the SDL TTF functions
         // taking a font filename (full path) as an argument.
         // The path to the font to be loaded is obtained from the fc
         // font config functions.
-        font_manager.LoadFontTexture(renderer, font_filename_liberation_mono, 12);
+        /*std::string valid_ascii_font_chars_string_liberation_mono;*/
+
+        font_manager.LoadFontTexture(renderer, font_filename_liberation_mono, 12
+            , valid_ascii_font_chars_string_liberation_mono);
         // font_manager.LoadFontTexture(font_filename, 12, font_color)
+
+        std::cout << "valid_ascii_font_chars_string_liberation_mono="
+                  << valid_ascii_font_chars_string_liberation_mono
+                  << std::endl;
+        std::cout << std::endl;
+
 
         // This function does the same as the above, however instead of
         // passing a pre-determined full font file path the function
@@ -168,18 +187,40 @@ int main(int argc, char* argv[])
         // config function.
         // This function needs to have some way to signal whether the
         // fc font config function succeeded.
+        # if FONT_TIMES_NEW_ROMAN
         std::string string_times_new_roman("Times New Roman");
+        std::cout << "LoadFontTextureFromDescription: " << string_times_new_roman << std::endl;
+        std::string valid_ascii_font_chars_string_times_new_roman;
+
         font_filename_times_new_roman =
-        font_manager.LoadFontTextureFromDescription(
-            //renderer, string_times_new_roman, 12, font_color);
-            renderer, string_times_new_roman, 12);
+            font_manager.LoadFontTextureFromDescription(
+                //renderer, string_times_new_roman, 12, font_color);
+                renderer, string_times_new_roman, 12
+                , valid_ascii_font_chars_string_times_new_roman);
+
+        std::cout << "font_filename_times_new_roman=" << font_filename_times_new_roman << std::endl;
+
+        std::cout << "valid_ascii_font_chars_string_times_new_roman="
+                  << valid_ascii_font_chars_string_times_new_roman
+                  << std::endl;
+        std::cout << std::endl;
+        #endif
 
         // testing the case of a font that does not exist
         std::string string_invalid("nothing");
+        std::cout << "LoadFontTextureFromDescription: " << string_invalid << std::endl;
+        std::string valid_ascii_font_chars_string_invalid;
+
         font_manager.LoadFontTextureFromDescription(
             //renderer, string_invalid, 12, font_color);
-            renderer, string_invalid, 12);
+            renderer, string_invalid, 12
+            , valid_ascii_font_chars_string_invalid);
             // seems to return something random
+
+        std::cout << "valid_ascii_font_chars_string_invalid"
+                  << valid_ascii_font_chars_string_invalid
+                  << std::endl;
+        std::cout << std::endl;
     }
     catch(const SDLLibException &e)
     {
@@ -196,7 +237,13 @@ int main(int argc, char* argv[])
     }
     // catch font_manager throws here
     // catch fontConfig throws here
+    // TODO: these catch statements should be changed
+    // if the font tries to load a character which cannot be rendered
+    // this causes a throw, and this throw should be visible here, not
+    // caught and silently ignored (ok its not slient because cout
+    // prints e.what() but this is near slient among all the other output)
 
+    std::cout << "GetFontTexture: " << font_filename_liberation_mono << " 12" << std::endl;
     // the to get the actual FontTexture
     // possibly the LoadFontTexture should return the same value
     std::shared_ptr<SDLFontTexture> font_texture_liberation_mono =
@@ -209,8 +256,12 @@ int main(int argc, char* argv[])
     // load a larger version of Liberation Mono font
     try
     {
+        std::cout << "LoadFontTexture: " << "Liberation Mono (18)" << std::endl;
+        std::string valid_ascii_font_chars_string_liberation_mono_large;
         font_manager.LoadFontTexture(
-            renderer, font_filename_liberation_mono, 18);
+            renderer, font_filename_liberation_mono, 18
+            , valid_ascii_font_chars_string_liberation_mono_large);
+        std::cout << std::endl;
     }
     catch(const SDLLibException &e)
     {
@@ -225,14 +276,17 @@ int main(int argc, char* argv[])
         std::cout << "catch ... case" << std::endl;
         throw;
     }
+    std::cout << "GetFontTexture: " << font_filename_liberation_mono << " 18" << std::endl;
     std::shared_ptr<SDLFontTexture> font_texture_liberation_mono_large(
         font_manager.GetFontTexture(
             font_filename_liberation_mono, 18));
 
+    # if FONT_TIMES_NEW_ROMAN
+    std::cout << "GetFontTexture: " << font_filename_times_new_roman << " 12" << std::endl;
     std::shared_ptr<SDLFontTexture> font_texture_times_new_roman(
         font_manager.GetFontTexture(
             font_filename_times_new_roman, 12));
-
+    #endif
 
     {
 
@@ -267,8 +321,6 @@ int main(int argc, char* argv[])
             // main infinite loop
             for(bool quit = false; quit == false; )
             {
-                
-
 
                 SDL_Event event;
                 while(SDL_PollEvent(&event) != 0)
@@ -284,12 +336,13 @@ int main(int argc, char* argv[])
                 }
 
 
+                SDL_SetRenderDrawColor(renderer.get(), COLOR_BACKGROUND);
+                SDL_RenderClear(renderer.get());
 
-                SDL_SetRenderDrawColor(
-                    std::shared_ptr<SDL_Renderer>(renderer).get(),
-                    COLOR_BACKGROUND);
-
-                SDL_RenderClear(std::shared_ptr<SDL_Renderer>(renderer).get());
+                debug_draw_chars_texture(
+                    renderer,
+                    font_texture_liberation_mono,
+                    0, 150);
 
 
                 //textgrid.Draw(window);
@@ -318,18 +371,23 @@ int main(int argc, char* argv[])
                 ///rdst.x = 0;
                 ///rdst.y += font_line_skip;
 
+                // TODO: now the font characters are (were) not printing correctly
+                // presumably because the rending is messed up for some of them
+                // and this has affected the rsrc and rdst rect objects
+                // (obtained from Glyph Metrics)
+
                 std::string mytext("hello world 0123456789'''");
-                int ticktock = 0;
+                ////int ticktock = 0;
                 int t_pos_x = pos_x;
                 for(char c: mytext)
                 {
                     write(
-                        //std::shared_ptr<SDL_Renderer>(renderer),
                         renderer,
                         font_texture_liberation_mono,
                         c, t_pos_x, pos_y,
                         true);
                 }
+
                 write_string(
                     renderer,
                     font_texture_liberation_mono_large,
@@ -339,7 +397,6 @@ int main(int argc, char* argv[])
                 for(char c: mytext)
                 {
                     write_with_background(
-                        //std::shared_ptr<SDL_Renderer>(renderer),
                         renderer,
                         font_texture_liberation_mono,
                         c, t_pos_x, pos_y + 40,
@@ -347,16 +404,48 @@ int main(int argc, char* argv[])
                         COLOR_GREEN);
                 }
 
+                // TODO: not sure EXACTLY how the API should work here, but
+                // probably something like this:
+                // - Initialize a SDLFontTexture via the SDLFontManager
+                // - should return an object which describes what the valid
+                // characters which can be rendered are
+                // - if a character is written using the TTY write functions
+                // which is NOT a valid character, then throw an error
+                // TODO: currently invalid characters are silently ignored
+
+                // create a test string with all possible ASCII symbols
+                t_pos_x = pos_x;
+                std::string all_symbols;
+                /*const unsigned char c_start = 0;
+                const unsigned char c_end = 255;
+                for(unsigned char c = c_start; ; ++ c)
+                {
+                    all_symbols.push_back(c);
+                    if(c == c_end) break;
+                }*/
+                all_symbols = valid_ascii_font_chars_string_liberation_mono;
+                ////std::cout << "write_string: " << all_symbols << std::endl;
+                write_string(renderer,
+                    font_texture_liberation_mono, all_symbols,
+                    t_pos_x, pos_y + 100, true);
+                ////std::cout << "done" << std::endl;
+                // this blows up because function at() argument is out of range
+                // this is because the font symbols are only loaded for ' ' to
+                // '~' (or whatever it is)
+                // need to render other values
+
+
+                // back to older code
+                # if FONT_TIMES_NEW_ROMAN
                 std::string mystring("this is a test string!");
                 t_pos_x = pos_x;
                 write_string(
-                    //std::shared_ptr<SDL_Renderer>(renderer),
                     renderer,
                     //font_texture_liberation_mono_large,
                     font_texture_times_new_roman,
                     mystring, t_pos_x, pos_y + 80,
                     false);
-
+                #endif
 
                     /*
                     int offset_x = 0;
@@ -414,6 +503,8 @@ int main(int argc, char* argv[])
 
                 //SDL_RenderPresent(std::shared_ptr<SDL_Renderer>(renderer).get());
                 SDL_RenderPresent(renderer.get());
+
+
             }
 
 
