@@ -19,7 +19,7 @@ find_package(SDL2TTF REQUIRED)
 include_directories(textgraphicslib ${SDL2_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIR})
 
 set(SOURCE_FILES main.cpp)
-set(TEXTGRAPHICSLIB_SOURCE_FILES fc_helper.cpp sdlfontmanager.cpp sdlfontmanager_fontmanagerinitsuccess.cpp sdlfonttexture.cpp fc_helper.cpp sdlhelper.cpp tty_write_functions.cpp)
+set(TEXTGRAPHICSLIB_SOURCE_FILES fc_helper.cpp sdlfontmanager.cpp sdlfontmanager_fontmanagerinitsuccess.cpp sdlfonttexture.cpp sdlhelper.cpp tty_write_functions.cpp)
 
 add_library(textgraphicslib ${TEXTGRAPHICSLIB_SOURCE_FILES})
 target_link_libraries(textgraphicslib PUBLIC SDL2::SDL2)
