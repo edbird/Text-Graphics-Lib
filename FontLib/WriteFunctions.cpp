@@ -1,26 +1,26 @@
-#include "tty_write_functions.hpp"
+#include "WriteFunctions.h"
 
+// Internal includes
+#include "SDLHelper.h"
+#include "FontTexture.h"
 
-#include "sdlhelper.hpp"
-#include "sdlfonttexture.hpp"
-
-
+// External includes
 #include <SDL2/SDL.h>
 
 
-void debug_draw_chars_texture(
-    std::shared_ptr<SDL_Renderer> sdlrenderer,
-    std::shared_ptr<SDLFontTexture> sdlfonttexture,
+void debugDrawCharsTexture(
+    std::shared_ptr<SDL_Renderer> sdlRenderer,
+    std::shared_ptr<FontTexture> fontTexture,
     const int x, const int y)
 {
-    //std::cout << __func__ << std::endl;
+    // Draws the entire rendered texture
     
     int width = 0;
     int height = 0;
 
     // TODO: check return value
     int return_value =
-        SDL_QueryTexture(sdlfonttexture->m_chars_texture.get(),
+        SDL_QueryTexture(fontTexture->mCharsTexture.get(),
             nullptr, nullptr, &width, &height);
 
     SDL_Rect rsrc = {0, 0, width, height};
@@ -30,8 +30,8 @@ void debug_draw_chars_texture(
     //rdst.y += y;
 
     SDL_RenderCopy(
-        sdlrenderer.get(),
-        sdlfonttexture->m_chars_texture.get(),
+        sdlRenderer.get(),
+        fontTexture->mCharsTexture.get(),
         &rsrc, &rdst);
 }
 
@@ -43,32 +43,28 @@ void debug_draw_chars_texture(
 // documentation notes on argument `advance`
 //
 // all printable characters have a width, which is stored in the object
-// sdlfonttexture->map_rendered_chars_advance
+// fontTexture->mapRenderedCharsAdvance
 // 
 
 void write(
-    std::shared_ptr<SDL_Renderer> sdlrenderer,
-    std::shared_ptr<SDLFontTexture> sdlfonttexture,
-    //SDL_Renderer &sdlrenderer,
-    const char c,
+    std::shared_ptr<SDL_Renderer> sdlRenderer,
+    std::shared_ptr<FontTexture> fontTexture,
+    const Uint16 c,
     int &x, const int y,
-    const bool advance = false)
+    const bool advance)
 {
 
-    //std::cout << __func__ << std::endl;
-
-    // this prevents the function trying to copy an invalid character
-    // also in the write with background function
-    if(sdlfonttexture->map_rendered_chars_glyph_value_valid.at(c) != true) return;
+    // Do nothing if the font does not contain the character
+    if(!fontTexture->setRenderedCharsGlyphValid.contains(c))
+    {
+        return;
+    }
 
     int x_copy = x;
     int y_copy = y;
 
-    /*std::shared_ptr<SDLFontTexture> sdlfonttexture
-        = sdlfontmanager.m_sdlfonttexturemanager;*/
-
-    SDL_Rect rsrc = sdlfonttexture->map_rendered_chars_srect.at(c);
-    SDL_Rect rdst = sdlfonttexture->map_rendered_chars_drect.at(c);
+    SDL_Rect rsrc = fontTexture->mapRenderedCharsSRect.at(c);
+    SDL_Rect rdst = fontTexture->mapRenderedCharsDRect.at(c);
     //SDL_Rect rdst = {x, y, rsrc.w, rsrc.h};
 
     //std::cout << "x=" << x << std::endl;
@@ -77,15 +73,12 @@ void write(
     rdst.y += y_copy;
 
     SDL_RenderCopy(
-        sdlrenderer.get(),
-        sdlfonttexture->m_chars_texture.get(),
+        sdlRenderer.get(),
+        fontTexture->mCharsTexture.get(),
         &rsrc, &rdst);
 
-    const int x_advance =
-        sdlfonttexture->map_rendered_chars_advance.at(c);
+    const int x_advance = fontTexture->mapRenderedCharsAdvance.at(c);
     x_copy += x_advance;
-
-    //std::cout << "advance=" << advance << std::endl;
 
 
     // TODO: how should this map work?
@@ -97,10 +90,7 @@ void write(
     // and width,height are the width and height of the area
     // to copy with the rendercopy function
 
-    //std::map<char, SDL_Rect> map_rendered_chars_rect;
-    //SDL_RenderCopy(renderer, text_texture, &rsrc, &rdst);
-
-    if(advance == true)
+    if(advance)
     {
         x = x_copy;
     }
@@ -108,44 +98,42 @@ void write(
 }
 
 
-// TODO: convert SDL Renderer to a smart pointer?
-
-void write_with_background(
-    std::shared_ptr<SDL_Renderer> sdlrenderer,
-    std::shared_ptr<SDLFontTexture> sdlfonttexture,
-    //SDL_Renderer &sdlrenderer,
-    const char c,
+void writeWithBackground(
+    std::shared_ptr<SDL_Renderer> sdlRenderer,
+    std::shared_ptr<FontTexture> fontTexture,
+    const Uint16 c,
     int &x, const int y,
     const bool advance,
-    const SDL_Color &background_color)
+    const SDL_Color &backgroundColor)
 {
 
-    // this prevents the function trying to copy an invalid character
-    // also in standard write function
-    if(sdlfonttexture->map_rendered_chars_glyph_value_valid.at(c) != true) return;
+    // Do nothing if the font does not contain the character
+    if(!fontTexture->setRenderedCharsGlyphValid.contains(c))
+    {
+        return;
+    }
 
     int x_copy = x;
     int y_copy = y;
 
-    SDL_Rect rsrc = sdlfonttexture->map_rendered_chars_srect.at(c);
-    SDL_Rect rdst = sdlfonttexture->map_rendered_chars_drect.at(c);
+    SDL_Rect rsrc = fontTexture->mapRenderedCharsSRect.at(c);
+    SDL_Rect rdst = fontTexture->mapRenderedCharsDRect.at(c);
     //SDL_Rect rdst = {x, y, rsrc.w, rsrc.h};
 
     rdst.x += x_copy;
     rdst.y += y_copy;
 
-    SDL_SetRenderDrawColor(sdlrenderer.get(), background_color);
-    SDL_RenderFillRect(sdlrenderer.get(), &rdst);
+    SDL_SetRenderDrawColor(sdlRenderer.get(), backgroundColor);
+    SDL_RenderFillRect(sdlRenderer.get(), &rdst);
     SDL_RenderCopy(
-        sdlrenderer.get(),
-        sdlfonttexture->m_chars_texture.get(),
+        sdlRenderer.get(),
+        fontTexture->mCharsTexture.get(),
         &rsrc, &rdst);
 
-    const int x_advance =
-        sdlfonttexture->map_rendered_chars_advance.at(c);
+    const int x_advance = fontTexture->mapRenderedCharsAdvance.at(c);
     x_copy += x_advance;
 
-    if(advance == true)
+    if(advance)
     {
         x = x_copy;
     }
@@ -153,13 +141,12 @@ void write_with_background(
 
 
 
-void write_string(
-    std::shared_ptr<SDL_Renderer> sdlrenderer,
-    std::shared_ptr<SDLFontTexture> sdlfonttexture,
-    //SDL_Renderer &sdlrenderer,
+void writeString(
+    std::shared_ptr<SDL_Renderer> sdlRenderer,
+    std::shared_ptr<FontTexture> fontTexture,
     const std::string &text,
     int &x, const int y,
-    const bool advance = false)
+    const bool advance)
 {
 
     int x_copy = x;
@@ -176,35 +163,79 @@ void write_string(
         // otherwise all the characters of the string are printed on
         // top of each other, which makes no sense for a string printing
         // function
-        write(sdlrenderer, sdlfonttexture, c, x_copy, y_copy, true);
-        //write(sdlrenderer, sdlfontmanager, c, local_x, y);
-
-    /*
-        SDL_Rect rsrc = sdlfonttexture->map_rendered_chars_srect.at(c);
-        SDL_Rect rdst = sdlfonttexture->map_rendered_chars_drect.at(c);
-        //SDL_Rect rdst = {x, y, rsrc.w, rsrc.h};
-
-        rdst.x += local_x;
-        rdst.y += y;
-
-        SDL_SetRenderDrawColor(sdlrenderer.get(), background_color);
-        SDL_RenderFillRect(sdlrenderer.get(), &rdst);
-        SDL_RenderCopy(
-            sdlrenderer.get(),
-            sdlfonttexture->m_chars_texture.get(),
-            &rsrc, &rdst);
-
-        const int advance =
-            sdlfonttexture->map_rendered_chars_advance.at(c);
-        local_x += advance;
-    */
+        write(sdlRenderer, fontTexture, c, x_copy, y_copy, true);
     }
 
-    if(advance == true)
+    if(advance)
     {
         x = x_copy;
     }
 }
+
+
+void writeStringWithBackground(
+    std::shared_ptr<SDL_Renderer> sdlRenderer,
+    std::shared_ptr<FontTexture> fontTexture,
+    const std::string &text,
+    int &x, const int y,
+    const bool advance,
+    const SDL_Color &backgroundColor)
+{
+
+    int x_copy = x;
+    int y_copy = y;
+
+    for(auto c: text)
+    {
+        writeWithBackground(sdlRenderer, fontTexture, c, x_copy, y_copy, true, backgroundColor);
+    }
+
+    if(advance)
+    {
+        x = x_copy;
+    }
+}
+
+
+void writeStringWithTickTockBackground(
+    std::shared_ptr<SDL_Renderer> sdlRenderer,
+    std::shared_ptr<FontTexture> fontTexture,
+    const std::string &text,
+    int &x, const int y,
+    const bool advance,
+    const SDL_Color &backgroundColor1,
+    const SDL_Color &backgroundColor2)
+{
+    int tickTock = 0;
+
+    int x_copy = x;
+    int y_copy = y;
+
+    const SDL_Color *backgroundColor = &backgroundColor1;
+
+    for(auto c: text)
+    {
+        writeWithBackground(sdlRenderer, fontTexture, c, x_copy, y_copy, true, *backgroundColor);
+
+        if(tickTock)
+        {
+            backgroundColor = &backgroundColor1;
+        }
+        else
+        {
+            backgroundColor = &backgroundColor2;
+        }
+
+        ++ tickTock;
+        tickTock %= 2;
+    }
+
+    if(advance)
+    {
+        x = x_copy;
+    }
+}
+
 
 
 // NOTE: this is a bit weird because in order to know the size of the
@@ -214,7 +245,7 @@ void write_string(
 // TODO: would it be better to draw actual font characters for the
 // caret symbol? Do the fonts (in general) support some special
 // characters for this? If not, I could potentially draw custom
-// font symbols and include them in the sdlfonttexture
+// font symbols and include them in the fontTexture
 // This would seem to be the most sensible approach as the
 // font texture will store all data for drawing any of the required
 // symbols.
@@ -230,20 +261,20 @@ void write_string(
 // At the moment I have used a TextGridElement class to hold the
 // expanded data type.
 #if 0
-void write_custom_symbol(
-    std::shared_ptr<SDL_Renderer> sdlrenderer,
-    std::shared_ptr<SDLFontTexture> sdlfonttexture,
+void writeCustomSymbol(
+    std::shared_ptr<SDL_Renderer> sdlRenderer,
+    std::shared_ptr<FontTexture> fontTexture,
     //const char c,
     int &x, const int y,
-    const bool advance = false)
+    const bool advance)
 {
     // this function was never completed?
 
     int x_copy = x;
     int y_copy = y;
 
-    //SDL_Rect rsrc = sdlfonttexture->map_rendered_chars_srect.at(c);
-    SDL_Rect rdst = sdlfonttexture->map_rendered_chars_drect.at(c);
+    //SDL_Rect rsrc = fontTexture->mapRenderedCharsSRect.at(c);
+    SDL_Rect rdst = fontTexture->mapRenderedCharsDRect.at(c);
     //SDL_Rect rdst = {x, y, rsrc.w, rsrc.h};
 
     //std::cout << "x=" << x << std::endl;
@@ -252,12 +283,12 @@ void write_custom_symbol(
     rdst.y += y_copy;
 
     SDL_RenderCopy(
-        sdlrenderer.get(),
-        sdlfonttexture->m_chars_texture.get(),
+        sdlRenderer.get(),
+        fontTexture->mCharsTexture.get(),
         &rsrc, &rdst);
 
     const int x_advance =
-        sdlfonttexture->map_rendered_chars_advance.at(c);
+        fontTexture->mapRenderedCharsAdvance.at(c);
     x_copy += x_advance;
 
     if(advance == true)

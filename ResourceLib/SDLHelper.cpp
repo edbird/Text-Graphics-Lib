@@ -1,4 +1,4 @@
-#include "sdlhelper.hpp"
+#include "SDLHelper.h"
 
 
 /*int SDL_SetRenderDrawColor(
@@ -19,7 +19,7 @@ int SDL_SetRenderDrawColor(
 }
 
 
-SDL_Color SDL_MakeColor(const int r, const int g, const int b)
+SDL_Color SDL_MakeColor(const Uint8 r, const Uint8 g, const Uint8 b)
 {
     const SDL_Color color {r, g, b, 255};
     return color;

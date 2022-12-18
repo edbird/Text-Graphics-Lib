@@ -1,5 +1,5 @@
-#ifndef SDLRENDERER_HPP
-#define SDLRENDERER_HPP
+#ifndef SDLRENDERER_H
+#define SDLRENDERER_H
 
 
 #include <SDL2/SDL.h>
@@ -16,8 +16,8 @@ int SDL_SetRenderDrawColor(
     SDL_Color color);
 
 
-SDL_Color SDL_MakeColor(const int r, const int g, const int b);
+SDL_Color SDL_MakeColor(const Uint8 r, const Uint8 g, const Uint8 b);
 
 
 
-#endif // SDLHELPER_HPP
+#endif // SDLHELPER_H
